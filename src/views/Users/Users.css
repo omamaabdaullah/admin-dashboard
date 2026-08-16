@@ -1,0 +1,580 @@
+/* src/views/Users/Users.css */
+
+/* ══════════════════════════════
+   الصفحة
+══════════════════════════════ */
+.users-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+  overflow-y: auto;
+  direction: rtl;
+}
+
+/* ══════════════════════════════
+   Header
+══════════════════════════════ */
+.users-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.users-title-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.users-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #261816;
+  margin: 0;
+}
+
+.users-count {
+  font-size: 13px;
+  color: #675C5A;
+  background: #F7DDD9;
+  padding: 4px 12px;
+  border-radius: 9999px;
+ 
+}
+
+.users-controls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.users-filter {
+  height: 44px;
+  padding: 0 16px;
+  background: #FDECEA;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #261816;
+  cursor: pointer;
+  outline: none;
+  direction: rtl;
+}
+
+.users-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.users-search-icon {
+  position: absolute;
+  right: 14px;
+  color: #675C5A;
+  pointer-events: none;
+}
+
+.users-search {
+  height: 44px;
+  width: 240px;
+  padding: 0 40px 0 16px;
+  background: #FDECEA;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #261816;
+  outline: none;
+  direction: rtl;
+  transition: width 0.2s;
+}
+
+.users-search::placeholder { color: #9E8C8A; }
+
+/* ══════════════════════════════
+   رسالة الخطأ
+══════════════════════════════ */
+.users-error {
+  padding: 12px 16px;
+  background: #FEE2E2;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #BA1A1A;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════
+   الجدول — يظهر فقط على ≥ 768px
+══════════════════════════════ */
+.users-table-card {
+  background: #FFFFFF;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(192, 57, 43, 0.06);
+  overflow: hidden;
+  flex-shrink: 0;
+  display: block;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  direction: rtl;
+}
+
+.users-table thead tr {
+  background: #FFF0EE;
+  border-bottom: 1px solid #F7DDD9;
+}
+
+.users-table thead th {
+  padding: 18px 24px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #675C5A;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.users-table thead th.col-email   { text-align: center; }
+.users-table thead th.col-actions { text-align: left; }
+
+.users-row {
+  border-bottom: 1px solid #FFF0EE;
+  transition: background 0.15s;
+}
+.users-row:last-child  { border-bottom: none; }
+.users-row:hover       { background: #FFFAF9; }
+
+.users-table td {
+  padding: 14px 24px;
+  vertical-align: middle;
+}
+
+/* أعمدة */
+.col-name    { width: 24%; }
+.col-email   { width: 30%; text-align: center !important; }
+.col-date    { width: 20%; }
+.col-status  { width: 12%; }
+.col-actions { width: 14%; }
+
+/* ══════════════════════════════
+   مشتركات المستخدم
+══════════════════════════════ */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  direction: rtl;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  background: #FCE2DE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #9E2016;
+  flex-shrink: 0;
+}
+
+.user-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  object-fit: cover;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #261816;
+}
+
+.user-email {
+  font-size: 13px;
+  color: #59413D;
+  direction: ltr;
+  display: block;
+  text-align: center;
+}
+
+.user-date {
+  font-size: 13px;
+  color: #59413D;
+}
+
+/* ══════════════════════════════
+   Badge الحالة
+══════════════════════════════ */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-badge--active  { background: #DCFCE7; color: #15803D; }
+.status-badge--banned  { background: #FEE2E2; color: #B91C1C; }
+.status-badge--blocked { background: #FEE2E2; color: #B91C1C; }
+
+/* ══════════════════════════════
+   أزرار الإجراءات
+══════════════════════════════ */
+.action-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+.action-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s, transform 0.1s;
+  flex-shrink: 0;
+}
+
+.action-btn:hover:not(:disabled) { transform: scale(1.12); }
+.action-btn:disabled              { opacity: 0.3; cursor: not-allowed; }
+
+.action-btn--delete   { background: #FEF2F2; color: #DC2626; }
+.action-btn--delete:hover:not(:disabled)   { background: #FEE2E2; }
+
+.action-btn--block    { background: #FEF2F2; color: #DC2626; }
+.action-btn--block:hover:not(:disabled)    { background: #FEE2E2; }
+
+.action-btn--activate { background: #F0FDF4; color: #16A34A; }
+.action-btn--activate:hover:not(:disabled) { background: #DCFCE7; }
+
+/* ══════════════════════════════
+   حالات الجدول
+══════════════════════════════ */
+.users-loading {
+  text-align: center !important;
+  padding: 56px !important;
+  color: #675C5A;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.users-empty {
+  text-align: center !important;
+  padding: 56px !important;
+  color: #9E8C8A;
+  font-size: 14px;
+}
+
+.users-empty td {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.users-empty-icon { color: #F7DDD9; }
+
+/* ══════════════════════════════
+   Infinite Scroll
+══════════════════════════════ */
+.users-load-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px;
+  color: #675C5A;
+  font-size: 14px;
+  min-height: 60px;
+}
+
+.users-end {
+  text-align: center;
+  padding: 14px;
+  font-size: 13px;
+  color: #9E8C8A;
+  border-top: 1px solid #FFF0EE;
+}
+
+/* ══════════════════════════════
+   Spin
+══════════════════════════════ */
+.spin {
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ══════════════════════════════
+   نافذة تأكيد الحذف
+══════════════════════════════ */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.confirm-dialog {
+  background: #FFFFFF;
+  border-radius: 18px;
+  padding: 32px;
+  width: 420px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  direction: rtl;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+}
+
+.confirm-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #261816;
+  margin: 0;
+}
+
+.confirm-text {
+  font-size: 14px;
+  color: #675C5A;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.confirm-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  justify-content: flex-start;
+  margin-top: 4px;
+}
+
+.confirm-btn {
+  padding: 10px 24px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.confirm-btn:hover:not(:disabled) { opacity: 0.85; }
+.confirm-btn:disabled             { opacity: 0.5; cursor: not-allowed; }
+
+.confirm-btn--cancel { background: #F7DDD9; color: #59413D; }
+.confirm-btn--delete { background: #DC2626; color: #FFFFFF; }
+
+/* ══════════════════════════════
+   بطاقات الموبايل — مخفية افتراضياً
+══════════════════════════════ */
+.users-cards { display: none; }
+
+.user-card {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 16px rgba(192, 57, 43, 0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.user-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-card-info .user-email {
+  text-align: right;
+  direction: ltr;
+  font-size: 12px;
+}
+
+.user-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #FFF0EE;
+  padding-top: 10px;
+}
+
+.users-empty--cards {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 40px 0;
+  color: #9E8C8A;
+}
+
+/* ══════════════════════════════
+   RESPONSIVE
+══════════════════════════════ */
+
+/* Tablet: 768px — 1023px */
+@media (max-width: 1023px) {
+  .users-title { font-size: 22px; }
+
+  .users-search { width: 180px; }
+
+  .col-date { display: none; }
+  .users-table thead th.col-date { display: none; }
+}
+
+/* Mobile: < 768px — نخفي الجدول ونظهر البطاقات */
+@media (max-width: 767px) {
+  .users-header {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .users-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .users-filter { flex: 1; }
+
+  .users-search {
+    width: 100%;
+    flex: 2;
+  }
+
+  /* نخفي الجدول ونظهر البطاقات */
+  .users-table-card { display: none; }
+  .users-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .confirm-dialog { padding: 24px; }
+  .confirm-actions { flex-direction: column-reverse; }
+  .confirm-btn { justify-content: center; }
+}
+
+/* Small mobile: < 400px */
+@media (max-width: 400px) {
+  .users-title { font-size: 20px; }
+  .users-controls { gap: 8px; }
+}
+
+/* ══════════════════════════════
+   زر تحميل المزيد
+══════════════════════════════ */
+.load-more-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  border-top: 1px solid #FFF0EE;
+}
+
+.load-more-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 28px;
+  background: #FFF0EE;
+  color: #9E2016;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  font-family: inherit;
+}
+
+.load-more-btn:hover:not(:disabled) {
+  background: #F7DDD9;
+  transform: translateY(-1px);
+}
+
+.load-more-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ══════════════════════════════
+   Loading بطاقات الموبايل
+══════════════════════════════ */
+.users-loading-cards {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px;
+  color: #675C5A;
+  font-size: 15px;
+}
+
+/* ══════════════════════════════
+   Sentinel — عنصر المراقبة
+══════════════════════════════ */
+.users-sentinel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  color: #675C5A;
+  font-size: 14px;
+  min-height: 64px;
+}
+
+/* ══════════════════════════════
+   Loading بطاقات الموبايل
+══════════════════════════════ */
+.users-loading-cards {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px;
+  color: #675C5A;
+  font-size: 15px;
+}

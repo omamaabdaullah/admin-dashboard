@@ -1,0 +1,730 @@
+/* Categories.css */
+
+/* ══════════════════════════════
+   PAGE LAYOUT
+══════════════════════════════ */
+.cat-page {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  direction: rtl;
+  background: var(--primary-bg);
+}
+
+/* ══════════════════════════════
+   LEFT PANEL — أنواع المطابخ
+══════════════════════════════ */
+.cat-left-panel {
+  width: 300px;
+  min-width: 300px;
+  height: 100%;
+  background: #ffffff;
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cat-left-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 24px 16px;
+  flex-shrink: 0;
+}
+
+.cat-left-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.cat-count-badge {
+  background: rgba(158, 32, 22, 0.1);
+  color: var(--primary-dark);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+
+.cat-cuisine-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cat-cuisine-list::-webkit-scrollbar { width: 4px; }
+.cat-cuisine-list::-webkit-scrollbar-track { background: transparent; }
+.cat-cuisine-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* بطاقة مطبخ */
+.cat-cuisine-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+  background: #ffffff;
+  position: relative;
+}
+
+.cat-cuisine-item:hover {
+  background: #FFF0EE;
+}
+
+.cat-cuisine-item:hover .cat-cuisine-actions {
+  opacity: 1;
+}
+
+.cat-cuisine-item.active {
+  background: #FFE9E6;
+  border-right: 4px solid var(--primary);
+}
+
+.cat-cuisine-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+}
+
+.cat-cuisine-emoji {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.cat-cuisine-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.cat-cuisine-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.cat-cuisine-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* أزرار التعديل والحذف */
+.cat-cuisine-actions {
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.cat-icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  background: transparent;
+}
+
+.cat-icon-btn--delete { color: #BA1A1A; }
+.cat-icon-btn--delete:hover { background: #FFE9E6; }
+.cat-icon-btn--edit   { color: var(--text-muted); }
+.cat-icon-btn--edit:hover   { background: #f0f0f0; }
+
+/* زر إضافة مطبخ */
+.cat-add-cuisine-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 16px 24px 24px;
+  padding: 12px;
+  border: 1px dashed rgba(158, 32, 22, 0.35);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--primary-dark);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+
+.cat-add-cuisine-btn:hover {
+  background: #FFF0EE;
+  border-color: var(--primary-dark);
+}
+
+/* ══════════════════════════════
+   RIGHT PANEL — التصنيفات
+══════════════════════════════ */
+.cat-right-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 36px 40px;
+  overflow-y: auto;
+  gap: 32px;
+}
+
+.cat-right-panel::-webkit-scrollbar { width: 4px; }
+.cat-right-panel::-webkit-scrollbar-track { background: transparent; }
+.cat-right-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* هيدر اليمين */
+.cat-right-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.cat-right-title-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.cat-right-title {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.cat-right-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* زر إضافة تصنيف */
+.cat-add-sub-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  background: var(--primary-dark);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cat-add-sub-btn:hover { background: var(--primary); }
+
+/* شبكة التصنيفات الفرعية */
+.cat-sub-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* بطاقة تصنيف فرعي */
+.cat-sub-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 6px 20px rgba(192, 57, 43, 0.05);
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.cat-sub-card:hover {
+  box-shadow: 0 10px 30px rgba(192, 57, 43, 0.1);
+  border-color: rgba(192, 57, 43, 0.3);
+}
+
+.cat-sub-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.cat-sub-emoji-box {
+  width: 52px;
+  height: 52px;
+  background: #FFE9E6;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.cat-sub-count {
+  background: rgba(39, 174, 96, 0.1);
+  color: #27AE60;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 9999px;
+}
+
+.cat-sub-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-dark);
+  text-align: right;
+  margin-top: 16px;
+}
+
+.cat-sub-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: right;
+  line-height: 1.5;
+  flex: 1;
+}
+
+/* footer البطاقة */
+.cat-sub-footer {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+}
+
+.cat-sub-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.cat-sub-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.cat-sub-btn--delete {
+  background: #FFE9E6;
+  color: #BA1A1A;
+}
+.cat-sub-btn--delete:hover { background: #FECDD3; }
+
+.cat-sub-btn--edit {
+  background: #FFE9E6;
+  color: var(--text-muted);
+}
+.cat-sub-btn--edit:hover { background: #f0f0f0; }
+
+/* تأكيد حذف inline */
+.cat-inline-confirm {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.cat-confirm-yes {
+  padding: 6px 14px;
+  background: #BA1A1A;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.cat-confirm-yes:hover { background: #9b1515; }
+
+.cat-confirm-no {
+  padding: 6px 14px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.cat-confirm-no:hover { background: #f5f5f5; }
+
+/* empty state */
+.cat-empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 15px;
+}
+
+.cat-empty-icon { font-size: 48px; }
+
+/* ══════════════════════════════
+   OVERLAY & MODAL
+══════════════════════════════ */
+.cat-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(38, 24, 22, 0.4);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  direction: rtl;
+}
+
+.cat-modal {
+  background: #fff;
+  border-radius: 20px;
+  padding: 32px;
+  width: 440px;
+  max-width: 95vw;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+
+.cat-modal--sm {
+  width: 360px;
+}
+
+.cat-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cat-modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.cat-modal-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: #f5f5f5;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.cat-modal-close:hover { background: #ebebeb; }
+
+/* حقول المودال */
+.cat-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cat-field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dark);
+  text-align: right;
+}
+
+.cat-field-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: #FFF8F6;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 14px;
+  color: var(--text-dark);
+  text-align: right;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  direction: rtl;
+}
+
+.cat-field-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.1);
+}
+
+/* emoji picker */
+.cat-emoji-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cat-emoji-btn {
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background: #FFF8F6;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.cat-emoji-btn:hover { background: #FFE9E6; }
+.cat-emoji-btn.selected {
+  border-color: var(--primary);
+  background: #FFE9E6;
+}
+
+/* أزرار المودال */
+.cat-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+}
+
+.cat-btn-cancel {
+  padding: 10px 22px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.cat-btn-cancel:hover { background: #f5f5f5; }
+
+.cat-btn-save {
+  padding: 10px 26px;
+  background: var(--primary-dark);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.cat-btn-save:hover { background: var(--primary); }
+
+.cat-btn-delete {
+  padding: 10px 22px;
+  background: #BA1A1A;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.cat-btn-delete:hover { background: #9b1515; }
+
+.cat-confirm-text {
+  font-size: 14px;
+  color: var(--text-muted);
+  text-align: right;
+  line-height: 1.6;
+}
+
+/* ══════════════════════════════
+   RESPONSIVE — شاشات أصغر
+══════════════════════════════ */
+@media (max-width: 900px) {
+  .cat-sub-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 700px) {
+  .cat-page { flex-direction: column; }
+  .cat-left-panel { width: 100%; height: auto; border-left: none; border-bottom: 1px solid var(--border); }
+  .cat-sub-grid { grid-template-columns: 1fr; }
+}
+/* ══════════════════════════════
+   CENTERED STATE (loading / error)
+══════════════════════════════ */
+.cat-page--center {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ══════════════════════════════
+   SPINNER ANIMATION
+══════════════════════════════ */
+.cat-spin {
+  animation: cat-spin 0.8s linear infinite;
+}
+@keyframes cat-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ══════════════════════════════
+   CUISINE THUMBNAIL (صورة صغيرة في القائمة)
+══════════════════════════════ */
+.cat-cuisine-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════
+   IMAGE UPLOAD في المودال
+══════════════════════════════ */
+.cat-image-upload {
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.cat-image-upload:hover { border-color: var(--primary-dark); }
+
+.cat-image-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cat-image-placeholder {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ══════════════════════════════
+   MODAL ERROR
+══════════════════════════════ */
+.cat-modal-error {
+  font-size: 13px;
+  color: #BA1A1A;
+  background: #FEF2F2;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: -4px;
+}
+
+/* ══════════════════════════════
+   TOAST
+══════════════════════════════ */
+.cat-toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 9999;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  animation: cat-fadein 0.25s ease;
+}
+.cat-toast--success {
+  background: #F0FDF4;
+  color: #16A34A;
+  border: 1px solid #BBF7D0;
+}
+.cat-toast--error {
+  background: #FEF2F2;
+  color: #BA1A1A;
+  border: 1px solid #FECACA;
+}
+@keyframes cat-fadein {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0);    }
+}
+
+/* ══════════════════════════════
+   SUB-CARD IMAGE
+══════════════════════════════ */
+.cat-sub-img-wrap {
+  width: 100%;
+  height: 90px;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.cat-sub-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ══════════════════════════════
+   DELETE ERROR (inside confirm modal)
+══════════════════════════════ */
+.cat-delete-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #BA1A1A;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
+/* ══════════════════════════════
+   DELETE ERROR — updated style
+══════════════════════════════ */
+.cat-delete-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 4px;
+}
+.cat-delete-error__icon {
+  color: #BA1A1A;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.cat-delete-error__body {
+  color: #7F1D1D;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.cat-delete-error__body p {
+  margin: 0;
+}

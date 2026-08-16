@@ -1,0 +1,583 @@
+/* src/views/Notifications/Notifications.css */
+
+/* ══════════════════════════════════════════
+   الصفحة
+══════════════════════════════════════════ */
+.notif-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  direction: rtl;
+  width: 100%;
+  min-height: 0;
+}
+
+/* ══════════════════════════════════════════
+   العنوان
+══════════════════════════════════════════ */
+.notif-page-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.notif-page-title {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 36px;
+  color: var(--text-dark);
+  text-align: right;
+}
+
+.notif-page-sub {
+  font-size: 15px;
+  font-weight: 400;
+  color: #59413D;
+  text-align: right;
+}
+
+/* ══════════════════════════════════════════
+   Bento — القسمان جنباً لجنب
+══════════════════════════════════════════ */
+.notif-bento {
+  display: grid;
+  grid-template-columns: 290px 1fr;
+  gap: 24px;
+  align-items: stretch;
+  direction: rtl;
+}
+
+/* ══════════════════════════════════════════
+   بطاقة الإرسال (اليمين)
+══════════════════════════════════════════ */
+.notif-send-card {
+  background: #FFFFFF;
+  border: 1px solid #E1BFB9;
+  box-shadow: 0px 4px 20px rgba(158, 32, 22, 0.05);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  direction: rtl;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.notif-card-title-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.notif-card-title-icon {
+  color: #7C0202;
+  flex-shrink: 0;
+}
+
+.notif-card-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #7C0202;
+  text-align: right;
+}
+
+/* ── الفورم ── */
+.notif-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.notif-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.notif-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dark);
+  text-align: right;
+  align-self: flex-end;
+}
+
+/* ── خيارات المستلمين — صف واحد ── */
+.notif-recipients-grid {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  width: 100%;
+  direction: rtl;
+}
+
+.notif-recip-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 1px solid #E1BFB9;
+  border-radius: 12px;
+  background: #FFFFFF;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-dark);
+  transition: border-color 0.15s, background 0.15s;
+  direction: rtl;
+  white-space: nowrap;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.notif-recip-btn:hover {
+  border-color: #C0392B;
+  background: #FFF8F6;
+}
+
+.notif-recip-btn--active {
+  background: #FFE9E6;
+  border-color: #7C0202;
+  font-weight: 700;
+  color: #7C0202;
+}
+
+.notif-recip-radio {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid #6B7280;
+  background: #FFFFFF;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.notif-recip-radio--active {
+  border-color: #7C0202;
+  background: #7C0202;
+  box-shadow: inset 0 0 0 3px #FFFFFF;
+}
+
+/* ── حقول النص ── */
+.notif-input {
+  width: 100%;
+  height: 50px;
+  padding: 7px 16px;
+  border: 1px solid #E1BFB9;
+  border-radius: 12px;
+  background: #FFFFFF;
+  font-size: 16px;
+  color: var(--text-dark);
+  direction: rtl;
+  text-align: right;
+  outline: none;
+  transition: border-color 0.15s;
+  font-family: inherit;
+}
+
+.notif-input::placeholder { color: #6B7280; }
+.notif-input:focus { border-color: #C0392B; }
+
+.notif-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #E1BFB9;
+  border-radius: 12px;
+  background: #FFFFFF;
+  font-size: 16px;
+  color: var(--text-dark);
+  direction: rtl;
+  text-align: right;
+  outline: none;
+  resize: vertical;
+  min-height: 120px;
+  transition: border-color 0.15s;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+.notif-textarea::placeholder { color: #6B7280; }
+.notif-textarea:focus { border-color: #C0392B; }
+
+/* ── خطأ الإرسال ── */
+.notif-send-error {
+  font-size: 13px;
+  color: #C0392B;
+  text-align: right;
+  background: #FFF0EE;
+  border: 1px solid #FCE2DE;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+/* ── زر الإرسال ── */
+.notif-send-btn {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 48px;
+  background: #C0392B;
+  border: none;
+  border-radius: 12px;
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  font-family: inherit;
+}
+
+.notif-send-btn:hover:not(:disabled) { background: #9E2016; }
+.notif-send-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+.notif-send-btn--success { background: #16A34A; }
+.notif-send-btn--success:hover { background: #15803d; }
+
+/* ══════════════════════════════════════════
+   بطاقة السجل (اليسار)
+══════════════════════════════════════════ */
+.notif-log-card {
+  background: #FFFFFF;
+  border: 1px solid #E1BFB9;
+  box-shadow: 0px 4px 20px rgba(158, 32, 22, 0.05);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  direction: rtl;
+}
+
+/* ── رأس السجل ── */
+.notif-log-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  background: #FFF8F7;
+  border-bottom: 1px solid #E1BFB9;
+  flex-shrink: 0;
+}
+
+.notif-log-title-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.notif-log-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-dark);
+  text-align: right;
+}
+
+.notif-download-btn {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #7C0202;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  transition: opacity 0.15s;
+}
+
+.notif-download-btn:hover { opacity: 0.75; }
+
+/* ── الجدول ── */
+.notif-table-wrapper {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.notif-table {
+  width: 100%;
+  border-collapse: collapse;
+  direction: rtl;
+  table-layout: fixed;
+}
+
+.notif-thead-row {
+  background: #FFF0EE;
+}
+
+.notif-thead-row th {
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #59413D;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* عرض الأعمدة */
+.ncol-title      { width: 34%; }
+.ncol-recipients { width: 20%; text-align: center; }
+.ncol-date       { width: 20%; text-align: center; }
+.ncol-status     { width: 18%; text-align: center; }
+.ncol-actions    { width: 8%;  text-align: center; }
+
+.notif-thead-row th.ncol-recipients,
+.notif-thead-row th.ncol-date,
+.notif-thead-row th.ncol-status,
+.notif-thead-row th.ncol-actions {
+  text-align: center;
+}
+
+.notif-row {
+  border-top: 1px solid #E1BFB9;
+  transition: background 0.12s;
+}
+
+.notif-row:hover { background: #FFF8F6; }
+
+.notif-row td {
+  padding: 12px 10px;
+  vertical-align: middle;
+  text-align: right;
+}
+
+.notif-row td.ncol-recipients,
+.notif-row td.ncol-date,
+.notif-row td.ncol-status,
+.notif-row td.ncol-actions {
+  text-align: center;
+}
+
+/* ── محتوى الخلايا ── */
+.notif-title-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dark);
+  line-height: 1.45;
+  display: block;
+  word-break: break-word;
+}
+
+.notif-date {
+  font-size: 12px;
+  color: #59413D;
+  white-space: nowrap;
+  display: block;
+  text-align: center;
+}
+
+.notif-recip-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notif-status-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ── زر الحذف ── */
+.notif-delete-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #59413D;
+  border-radius: 6px;
+  transition: background 0.12s, color 0.12s;
+  margin: 0 auto;
+}
+
+.notif-delete-btn:hover:not(:disabled) {
+  background: #FFF0EE;
+  color: #C0392B;
+}
+
+.notif-delete-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── حالة فارغة ── */
+.notif-empty {
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+/* ══════════════════════════════════════════
+   Pagination
+══════════════════════════════════════════ */
+.notif-pagination {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: #FFF8F7;
+  border-top: 1px solid #E1BFB9;
+  flex-shrink: 0;
+  direction: rtl;
+}
+
+.notif-page-btns {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+}
+
+.notif-page-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #E1BFB9;
+  border-radius: 4px;
+  background: #FFFFFF;
+  font-size: 14px;
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+  font-family: inherit;
+}
+
+.notif-page-btn:hover:not(:disabled) {
+  background: #FFF0EE;
+  border-color: #C0392B;
+}
+
+.notif-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.notif-page-btn--active {
+  background: #7C0202;
+  border-color: #7C0202;
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.notif-page-btn--active:hover { background: #7C0202; }
+
+.notif-page-info {
+  font-size: 12px;
+  color: #59413D;
+  text-align: right;
+}
+
+/* ══════════════════════════════════════════
+   بطاقات الإحصائيات
+══════════════════════════════════════════ */
+.notif-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  direction: rtl;
+}
+
+.notif-stat-card {
+  background: #FFFFFF;
+  border: 1px solid #E1BFB9;
+  box-shadow: 0px 4px 20px rgba(158, 32, 22, 0.05);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  direction: rtl;
+}
+
+.notif-stat-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.notif-stat-label {
+  font-size: 12px;
+  color: #59413D;
+  text-align: right;
+}
+
+.notif-stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-dark);
+  text-align: right;
+  line-height: 1.2;
+}
+
+.notif-stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.notif-stat-icon--red    { background: #F7DDD9; color: #B02D21; }
+.notif-stat-icon--green  { background: #F0FDF4; color: #16A34A; }
+.notif-stat-icon--orange { background: #FEF5ED; color: #E67E22; }
+
+/* ══════════════════════════════════════════
+   Spin animation
+══════════════════════════════════════════ */
+.notif-spin {
+  animation: notif-rotate 0.8s linear infinite;
+}
+
+@keyframes notif-rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ══════════════════════════════════════════
+   Responsive
+══════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .notif-bento {
+    grid-template-columns: 1fr;
+  }
+  .notif-stats {
+    grid-template-columns: 1fr;
+  }
+}

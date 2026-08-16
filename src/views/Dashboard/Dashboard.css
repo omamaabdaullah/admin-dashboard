@@ -1,0 +1,554 @@
+
+/* Dashboard.css */
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 100%;
+  direction: rtl;
+}
+
+/* ======================== بطاقات الإحصائيات ======================== */
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.stat-card {
+  background: #FFFFFF;
+  border: 1px solid #FFF0EE;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  box-shadow: 0 4px 16px rgba(192, 57, 43, 0.05);
+  cursor: default;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(192, 57, 43, 0.1);
+}
+
+.stat-card--clickable {
+  cursor: pointer;
+}
+
+.stat-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+
+.stat-card-icon {
+  width: 36px;
+  height: 36px;
+  background: rgba(192, 57, 43, 0.1);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #C0392B;
+  flex-shrink: 0;
+}
+
+.stat-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.stat-badge--green  { background: #F0FDF4; color: #16A34A; }
+.stat-badge--orange { background: #FFF7ED; color: #EA580C; }
+.stat-badge--red    { background: #FEF2F2; color: #DC2626; }
+.stat-badge--blue   { background: #EFF6FF; color: #2563EB; }
+
+.stat-card-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #261816;
+  text-align: right;
+  line-height: 1.2;
+}
+
+.stat-card-label {
+  font-size: 12px;
+  color: #675C5A;
+  text-align: right;
+}
+
+/* ======================== الصف الثاني: آخر الوصفات + نشاط المستخدمين ======================== */
+.dashboard-row {
+  display: grid;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.dashboard-row--2cols {
+  grid-template-columns: 340px 1fr;
+}
+
+.dashboard-row--3cols {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.dashboard-row--2equal {
+  grid-template-columns: 1fr 1fr;
+}
+
+/* ======================== بطاقة ويدجت عامة ======================== */
+.widget-card {
+  background: #FFFFFF;
+  border: 1px solid #FFF0EE;
+  border-radius: 14px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 16px rgba(192, 57, 43, 0.05);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+
+.widget-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #261816;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.widget-title-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.widget-view-all {
+  font-size: 12px;
+  font-weight: 700;
+  color: #9E2016;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.widget-view-all:hover {
+  background: #FFF0EE;
+}
+
+.widget-period {
+  font-size: 12px;
+  color: #675C5A;
+  background: #FFF0EE;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s;
+}
+
+.widget-period:hover {
+  background: #F7DDD9;
+}
+
+/* ======================== قائمة الوصفات ======================== */
+.recipe-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.recipe-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.recipe-item:hover {
+  background: #FFF8F6;
+}
+
+.recipe-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #FFF0EE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #C0392B;
+  flex-shrink: 0;
+}
+
+.recipe-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.recipe-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #261816;
+}
+
+.recipe-category {
+  font-size: 10px;
+  font-weight: 700;
+  color: #9E2016;
+  background: #F7DDD9;
+  padding: 2px 8px;
+  border-radius: 5px;
+  align-self: flex-start;
+}
+
+.recipe-time {
+  font-size: 10px;
+  color: #675C5A;
+  min-width: 48px;
+  text-align: left;
+}
+
+/* ======================== الرسم البياني ======================== */
+.chart-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+  padding-bottom: 4px;
+}
+
+.chart-svg {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: block;
+}
+
+.chart-labels {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+
+.chart-labels span {
+  font-size: 11px;
+  color: #675C5A;
+}
+
+/* ======================== أكثر الوصفات مشاهدة ======================== */
+.top-recipe-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #FFF0EE;
+}
+
+.top-recipe-item:last-child {
+  border-bottom: none;
+}
+
+.top-recipe-rank {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.top-recipe-rank--1 { background: #FEF3C7; color: #B45309; }
+.top-recipe-rank--2 { background: #F1F5F9; color: #475569; }
+.top-recipe-rank--3 { background: #FFF7ED; color: #C2410C; }
+.top-recipe-rank--default { background: #F9FAFB; color: #6B7280; }
+
+.top-recipe-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.top-recipe-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #261816;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.top-recipe-author {
+  font-size: 11px;
+  color: #675C5A;
+}
+
+.top-recipe-views {
+  font-size: 12px;
+  font-weight: 600;
+  color: #675C5A;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* ======================== توزيع التصنيفات ======================== */
+.category-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.category-bar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.category-bar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.category-bar-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #261816;
+}
+
+.category-bar-value {
+  font-size: 11px;
+  font-weight: 700;
+  color: #675C5A;
+}
+
+.category-bar-track {
+  width: 100%;
+  height: 8px;
+  background: #FFF0EE;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.category-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+/* ======================== بطاقات التفاعل ======================== */
+.engagement-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.engagement-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #FFF8F6;
+  border-radius: 12px;
+  transition: background 0.15s;
+}
+
+.engagement-item:hover {
+  background: #FFF0EE;
+}
+
+.engagement-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.engagement-info {
+  flex: 1;
+}
+
+.engagement-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #261816;
+  line-height: 1.2;
+}
+
+.engagement-label {
+  font-size: 12px;
+  color: #675C5A;
+}
+
+.engagement-change {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.engagement-change--up   { background: #F0FDF4; color: #16A34A; }
+.engagement-change--down { background: #FEF2F2; color: #DC2626; }
+
+/* ======================== سجل العمليات ======================== */
+.audit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.audit-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  transition: background 0.15s;
+}
+
+.audit-item:hover {
+  background: #FFF8F6;
+}
+
+.audit-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.audit-dot--create  { background: #16A34A; }
+.audit-dot--delete  { background: #DC2626; }
+.audit-dot--update  { background: #2563EB; }
+.audit-dot--ban     { background: #EA580C; }
+.audit-dot--publish { background: #7C3AED; }
+.audit-dot--reject  { background: #DC2626; }
+.audit-dot--default { background: #9CA3AF; }
+
+.audit-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.audit-text {
+  font-size: 13px;
+  color: #261816;
+}
+
+.audit-text strong {
+  font-weight: 600;
+}
+
+.audit-action {
+  font-weight: 600;
+}
+
+.audit-action--create  { color: #16A34A; }
+.audit-action--delete  { color: #DC2626; }
+.audit-action--update  { color: #2563EB; }
+.audit-action--ban     { color: #EA580C; }
+.audit-action--publish { color: #7C3AED; }
+.audit-action--reject  { color: #DC2626; }
+.audit-action--default { color: #675C5A; }
+
+.audit-time {
+  font-size: 10px;
+  color: #9CA3AF;
+  margin-top: 2px;
+}
+
+.audit-user {
+  font-size: 11px;
+  color: #675C5A;
+  flex-shrink: 0;
+  text-align: left;
+}
+
+/* ======================== حالة التحميل والفراغ ======================== */
+.widget-loading,
+.widget-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9CA3AF;
+  font-size: 13px;
+  min-height: 120px;
+}
+
+.skeleton-pulse {
+  background: linear-gradient(90deg, #FFF0EE 25%, #FFF8F6 50%, #FFF0EE 75%);
+  background-size: 200% 100%;
+  animation: pulse 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes pulse {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ======================== Responsive ======================== */
+@media (max-width: 1200px) {
+  .stat-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .dashboard-row--3cols {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .stat-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .dashboard-row--2cols,
+  .dashboard-row--3cols,
+  .dashboard-row--2equal {
+    grid-template-columns: 1fr;
+  }
+}
