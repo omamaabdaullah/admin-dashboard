@@ -1,15 +1,112 @@
 // src/views/Recipes/AddRecipe.jsx
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import {
   Upload, Plus, Trash2, GripVertical,
   Clock, ChefHat, X, Check,
   Loader2, ChevronRight, AlertCircle,
 } from 'lucide-react';
 import { useAddRecipe, DIFFICULTY_OPTIONS } from '../../controllers/useAddRecipe';
+import VideoThumb from '../../components/VideoThumb';
 import './AddRecipe.css';
 
 /* ── مكون رقم الخطوة ── */
 const StepNumber = ({ n }) => <div className="ar-step-number">{n}</div>;
+
+const QuickAddModal = ({
+  kind,
+  cuisineName,
+  saving,
+  error,
+  setError,
+  onClose,
+  onSave,
+}) => {
+  const [itemName, setItemName] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const imageRef = useRef();
+  const isCuisine = kind === 'cuisine';
+
+  const handleImage = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    setPreview(URL.createObjectURL(file));
+  };
+
+  return (
+    <div
+      className="ar-overlay"
+      onClick={(e) => e.target === e.currentTarget && !saving && onClose()}
+    >
+      <div className="ar-quick-modal">
+        <div className="ar-quick-modal-header">
+          <button type="button" className="ar-quick-modal-close" onClick={onClose} disabled={saving}>
+            <X size={18} />
+          </button>
+          <h2 className="ar-quick-modal-title">
+            {isCuisine ? 'إضافة مطبخ جديد' : 'إضافة تصنيف جديد'}
+          </h2>
+        </div>
+
+        {!isCuisine && cuisineName && (
+          <p className="ar-quick-modal-hint">
+            سيُضاف التصنيف داخل مطبخ <strong>{cuisineName}</strong>
+          </p>
+        )}
+
+        <div className="ar-field">
+          <label className="ar-label">الاسم</label>
+          <input
+            className="ar-input"
+            placeholder={isCuisine ? 'مثال: المطبخ الشامي' : 'مثال: مشاوي'}
+            value={itemName}
+            onChange={(e) => { setItemName(e.target.value); setError(''); }}
+            disabled={saving}
+            autoFocus
+          />
+        </div>
+
+        <div className="ar-field">
+          <label className="ar-label">الصورة <span className="ar-optional">(اختياري)</span></label>
+          <button
+            type="button"
+            className="ar-quick-image"
+            onClick={() => !saving && imageRef.current?.click()}
+          >
+            {preview
+              ? <img src={preview} alt="" className="ar-quick-image-preview" />
+              : <span>انقر لاختيار صورة</span>
+            }
+          </button>
+          <input
+            ref={imageRef}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={handleImage}
+          />
+        </div>
+
+        {error && <p className="ar-quick-modal-error">{error}</p>}
+
+        <div className="ar-quick-modal-actions">
+          <button type="button" className="ar-btn-draft" onClick={onClose} disabled={saving}>
+            إلغاء
+          </button>
+          <button
+            type="button"
+            className="ar-btn-save"
+            onClick={() => onSave({ name: itemName, image: imageFile })}
+            disabled={saving || !itemName.trim()}
+          >
+            {saving ? <><Loader2 size={14} className="ar-spin" /> جاري الحفظ...</> : 'حفظ'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const AddRecipe = () => {
   const fileRef = useRef();
@@ -30,6 +127,13 @@ const AddRecipe = () => {
     selectedCategory, setSelectedCategory,
     cuisinesLoading,
     catsLoading,
+    quickAdd,
+    quickAddSaving,
+    quickAddError,
+    setQuickAddError,
+    openQuickAdd,
+    closeQuickAdd,
+    handleQuickAddSave,
 
     /* الوسائط */
     mediaPreviews,
@@ -210,19 +314,30 @@ const AddRecipe = () => {
               <div className="ar-row-2">
                 <div className="ar-field">
                   <label className="ar-label">نوع المطبخ</label>
-                  <select
-                    className="ar-input ar-select"
-                    value={selectedCuisine?.id ?? ''}
-                    onChange={(e) => {
-                      const c = cuisines.find((c) => String(c.id) === e.target.value);
-                      setSelectedCuisine(c ?? null);
-                      clearErr('category');
-                    }}
-                  >
-                    {cuisines.map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
+                  <div className="ar-select-with-add">
+                    <select
+                      className="ar-input ar-select"
+                      value={selectedCuisine?.id ?? ''}
+                      onChange={(e) => {
+                        const c = cuisines.find((c) => String(c.id) === e.target.value);
+                        setSelectedCuisine(c ?? null);
+                        clearErr('category');
+                      }}
+                    >
+                      {cuisines.length === 0 && <option value="">لا توجد مطابخ</option>}
+                      {cuisines.map((c) => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      className="ar-add-inline-btn"
+                      title="إضافة مطبخ جديد"
+                      onClick={() => openQuickAdd('cuisine')}
+                    >
+                      <Plus size={16} />
+                    </button>
+                  </div>
                 </div>
 
                 <div className="ar-field">
@@ -233,23 +348,34 @@ const AddRecipe = () => {
                       <span>تحميل...</span>
                     </div>
                   ) : (
-                    <select
-                      className={`ar-input ar-select${errors.category ? ' ar-input--error' : ''}`}
-                      value={selectedCategory?.id ?? ''}
-                      onChange={(e) => {
-                        const c = categories.find((c) => String(c.id) === e.target.value);
-                        setSelectedCategory(c ?? null);
-                        clearErr('category');
-                      }}
-                      disabled={categories.length === 0}
-                    >
-                      {categories.length === 0
-                        ? <option value="">لا توجد تصنيفات</option>
-                        : categories.map((c) => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
-                          ))
-                      }
-                    </select>
+                    <div className="ar-select-with-add">
+                      <select
+                        className={`ar-input ar-select${errors.category ? ' ar-input--error' : ''}`}
+                        value={selectedCategory?.id ?? ''}
+                        onChange={(e) => {
+                          const c = categories.find((c) => String(c.id) === e.target.value);
+                          setSelectedCategory(c ?? null);
+                          clearErr('category');
+                        }}
+                        disabled={!selectedCuisine || categories.length === 0}
+                      >
+                        {categories.length === 0
+                          ? <option value="">لا توجد تصنيفات</option>
+                          : categories.map((c) => (
+                              <option key={c.id} value={c.id}>{c.name}</option>
+                            ))
+                        }
+                      </select>
+                      <button
+                        type="button"
+                        className="ar-add-inline-btn"
+                        title={selectedCuisine ? `إضافة تصنيف داخل ${selectedCuisine.name}` : 'اختر مطبخاً أولاً'}
+                        disabled={!selectedCuisine}
+                        onClick={() => selectedCuisine && openQuickAdd('category')}
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </div>
                   )}
                   {errors.category && <span className="ar-field-error">{errors.category}</span>}
                 </div>
@@ -400,21 +526,24 @@ const AddRecipe = () => {
               accept="image/*,video/*"
               multiple
               style={{ display: 'none' }}
-              onChange={(e) => e.target.files?.length && addMediaFiles(e.target.files)}
+              onChange={(e) => {
+                if (e.target.files?.length) addMediaFiles(e.target.files);
+                e.target.value = '';
+              }}
             />
 
             {mediaPreviews.length > 0 && (
               <div className="ar-media-grid">
                 {mediaPreviews.map((m, i) => (
-                  <div key={i} className="ar-media-thumb">
+                  <div key={`${m.url}-${i}`} className="ar-media-thumb">
                     {m.type === 'video'
-                      ? <video src={m.url} className="ar-media-thumb-img" muted />
-                      : <img    src={m.url} alt=""  className="ar-media-thumb-img" />
+                      ? <VideoThumb src={m.url} poster={m.poster} playSize={28} />
+                      : <img src={m.url} alt="" className="ar-media-thumb-img" />
                     }
                     <button
                       type="button"
                       className="ar-media-thumb-remove"
-                      onClick={() => removeMedia(i)}
+                      onClick={(e) => { e.stopPropagation(); removeMedia(i); }}
                     >
                       <X size={12} />
                     </button>
@@ -483,6 +612,18 @@ const AddRecipe = () => {
 
         </div>
       </div>
+
+      {quickAdd && (
+        <QuickAddModal
+          kind={quickAdd}
+          cuisineName={selectedCuisine?.name}
+          saving={quickAddSaving}
+          error={quickAddError}
+          setError={setQuickAddError}
+          onClose={closeQuickAdd}
+          onSave={handleQuickAddSave}
+        />
+      )}
     </div>
   );
 };

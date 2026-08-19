@@ -1,12 +1,23 @@
 // src/views/Posts/Posts.jsx
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Search, Eye, CheckCircle, XCircle, Trash2,
-  ChefHat, X, Send, Loader2,
+  ChefHat, X, Send, Loader2, ChevronRight, ChevronLeft,
 } from 'lucide-react';
 import { usePosts, TABS, STATUS_LABELS, REJECT_REASONS } from '../../controllers/usePosts';
+import VideoThumb from '../../components/VideoThumb';
+import { isVideoMedia } from '../../utils/videoThumbnail';
 import './Posts.css';
+
+const PostCover = ({ post }) => {
+  const media = [...(post.media ?? [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))[0];
+  if (!media?.url) return <ChefHat size={18} />;
+  if (isVideoMedia(media)) {
+    return <VideoThumb src={media.url} poster={media.thumbnail} alt={post.title} playSize={16} />;
+  }
+  return <img src={media.url} alt={post.title} className="post-thumb-img" />;
+};
 
 const ActionBtn = ({ icon: Icon, color, title, onClick, disabled }) => (
   <button
@@ -109,17 +120,14 @@ const RejectModal = ({ post, onConfirm, onClose, loading }) => {
 const PostCard = ({ post, actionLoading, onApprove, onReject, onDelete, onView, formatDate }) => {
   const statusInfo = STATUS_LABELS[post.status] ?? { label: post.status, color: 'gray' };
   const isWorking  = actionLoading !== null;
-  const isPublished = post.status === 'approved';
+  const isReviewed = post.status === 'approved' || post.status === 'rejected';
 
   return (
     <div className="post-card">
       <div className="post-card-top">
         <div className="post-info">
           <div className="post-thumb">
-            {post.media?.[0]?.url
-              ? <img src={post.media[0].url} alt={post.title} className="post-thumb-img" />
-              : <ChefHat size={16} />
-            }
+            <PostCover post={post} />
           </div>
           <div className="post-text">
             <span className="post-name">{post.title}</span>
@@ -139,8 +147,8 @@ const PostCard = ({ post, actionLoading, onApprove, onReject, onDelete, onView, 
 
       <div className="post-card-actions">
         <ActionBtn icon={Eye}         color="gray"  title="عرض" onClick={() => onView(post)} disabled={false} />
-        <ActionBtn icon={CheckCircle} color="green" title="نشر" onClick={() => onApprove(post.id)} disabled={isPublished || isWorking} />
-        <ActionBtn icon={XCircle}     color="dark"  title="رفض" onClick={() => onReject(post)} disabled={isPublished || isWorking} />
+        <ActionBtn icon={CheckCircle} color="green" title="نشر" onClick={() => onApprove(post.id)} disabled={isReviewed || isWorking} />
+        <ActionBtn icon={XCircle}     color="dark"  title="رفض" onClick={() => onReject(post)} disabled={isReviewed || isWorking} />
         <ActionBtn icon={Trash2}      color="red"   title="حذف" onClick={() => onDelete(post.id)} disabled={isWorking} />
       </div>
     </div>
@@ -149,20 +157,33 @@ const PostCard = ({ post, actionLoading, onApprove, onReject, onDelete, onView, 
 
 const Posts = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = TABS.some((tab) => tab.key === searchParams.get('tab'))
+    ? searchParams.get('tab')
+    : 'all';
+  const initialSearch = searchParams.get('search') ?? '';
 
   const {
-    posts, hasMore, loading, loadingMore, error,
-    search, activeTab, actionLoading,
+    posts, meta, loading, error,
+    search, activeTab, page, actionLoading,
     rejectTarget, confirmDelete,
     setSearch, setRejectTarget, setConfirmDelete,
-    handleTabChange, handleRetry,
+    handleTabChange, handlePageChange, handleRetry,
     handleApprove, handleRejectConfirm, handleDelete,
-    sentinelRef, scrollRootRef,
     formatDate,
-  } = usePosts();
+  } = usePosts({ initialSearch, initialTab });
+
+  const lastPage = meta?.last_page ?? 1;
+
+  useEffect(() => {
+    const next = new URLSearchParams();
+    if (activeTab && activeTab !== 'all') next.set('tab', activeTab);
+    if (search.trim()) next.set('search', search.trim());
+    setSearchParams(next, { replace: true });
+  }, [activeTab, search, setSearchParams]);
 
   return (
-    <div className="posts-page" ref={scrollRootRef}>
+    <div className="posts-page">
 
       <div className="posts-header">
         <h1 className="posts-title">منشورات المستخدمين</h1>
@@ -171,7 +192,7 @@ const Posts = () => {
           <input
             className="posts-search"
             type="text"
-            placeholder="ابحث عن منشور أو مستخدم..."
+            placeholder="ابحث عن منشور..."
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
@@ -197,6 +218,7 @@ const Posts = () => {
         </div>
       )}
 
+      {/* Desktop table */}
       <div className="posts-table-card">
         <table className="posts-table">
           <thead>
@@ -222,18 +244,15 @@ const Posts = () => {
               </tr>
             ) : posts.map(post => {
               const statusInfo  = STATUS_LABELS[post.status] ?? { label: post.status, color: 'gray' };
-              const isWorking   = actionLoading !== null;
-              const isPublished = post.status === 'approved';
+              const isWorking  = actionLoading !== null;
+              const isReviewed = post.status === 'approved' || post.status === 'rejected';
 
               return (
                 <tr key={post.id} className="posts-row">
                   <td className="pcol-post">
                     <div className="post-info">
                       <div className="post-thumb">
-                        {post.media?.[0]?.url
-                          ? <img src={post.media[0].url} alt={post.title} className="post-thumb-img" />
-                          : <ChefHat size={18} />
-                        }
+                        <PostCover post={post} />
                       </div>
                       <div className="post-text">
                         <span className="post-name">{post.title}</span>
@@ -278,14 +297,14 @@ const Posts = () => {
                         color="dark"
                         title="رفض وإرسال رسالة"
                         onClick={() => setRejectTarget(post)}
-                        disabled={isPublished || isWorking}
+                        disabled={isReviewed || isWorking}
                       />
                       <ActionBtn
                         icon={CheckCircle}
                         color="green"
                         title="نشر"
                         onClick={() => handleApprove(post.id)}
-                        disabled={isPublished || isWorking}
+                        disabled={isReviewed || isWorking}
                       />
                     </div>
                   </td>
@@ -295,11 +314,30 @@ const Posts = () => {
           </tbody>
         </table>
 
-        {!loading && !hasMore && posts.length > 0 && (
-          <div className="posts-end">تم عرض جميع المنشورات ({posts.length})</div>
+        {!loading && posts.length > 0 && lastPage > 1 && (
+          <div className="posts-pagination">
+            <button
+              className="posts-page-btn"
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page <= 1}
+            >
+              <ChevronRight size={16} />
+              <span className="posts-page-btn-text">السابق</span>
+            </button>
+            <span className="posts-page-info">صفحة {page} من {lastPage}</span>
+            <button
+              className="posts-page-btn"
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page >= lastPage}
+            >
+              <span className="posts-page-btn-text">التالي</span>
+              <ChevronLeft size={16} />
+            </button>
+          </div>
         )}
       </div>
 
+      {/* Mobile cards */}
       <div className="posts-cards">
         {loading ? (
           <div className="posts-loading-cards">
@@ -320,16 +358,25 @@ const Posts = () => {
           />
         ))}
 
-        {!loading && !hasMore && posts.length > 0 && (
-          <div className="posts-end">تم عرض جميع المنشورات ({posts.length})</div>
-        )}
-      </div>
-
-      <div ref={sentinelRef} className="posts-sentinel" aria-hidden="true">
-        {loadingMore && (
-          <div className="posts-sentinel-loading">
-            <Loader2 size={20} className="posts-spin" />
-            <span>جاري تحميل المزيد...</span>
+        {!loading && posts.length > 0 && lastPage > 1 && (
+          <div className="posts-pagination">
+            <button
+              className="posts-page-btn"
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page <= 1}
+            >
+              <ChevronRight size={16} />
+              <span className="posts-page-btn-text">السابق</span>
+            </button>
+            <span className="posts-page-info">صفحة {page} من {lastPage}</span>
+            <button
+              className="posts-page-btn"
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page >= lastPage}
+            >
+              <span className="posts-page-btn-text">التالي</span>
+              <ChevronLeft size={16} />
+            </button>
           </div>
         )}
       </div>

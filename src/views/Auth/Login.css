@@ -310,6 +310,29 @@ body {
   top: 50%;
   transform: translateY(-50%);
   color: #59413D;
+  pointer-events: none;
+}
+
+.custom-input--password {
+  padding-left: 48px;
+}
+
+.password-eye-toggle {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #59413D;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 1;
 }
 
 .forgot-pass {

@@ -25,5 +25,5 @@ export const createEmployee = async (name, email, password, passwordConfirmation
 };
 
 export const deleteEmployee = async (id) => {
-  await axiosInstance.delete(`/users/${id}`);
+ await axiosInstance.delete(`/users/users/${id}`);
 };

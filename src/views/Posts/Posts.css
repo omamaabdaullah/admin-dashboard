@@ -148,6 +148,7 @@
   gap: 10px;
 }
 .post-thumb {
+  position: relative;
   width: 40px;
   height: 40px;
   background: #FFF0EE;
@@ -566,20 +567,37 @@
   to   { transform: rotate(360deg); }
 }
 
-/* ═══════════════════════════════════════════ Infinite Scroll Sentinel */
-.posts-sentinel {
-  padding: 8px 0;
-  min-height: 20px;
-}
-.posts-sentinel-loading {
+/* ═══════════════════════════════════════════ Pagination */
+.posts-pagination {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 16px;
-  color: #675C5A;
-  font-size: 13px;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid #F0E8E6;
+  flex-wrap: wrap;
 }
+.posts-page-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #E8D9D5;
+  background: #fff;
+  color: #261816;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s;
+}
+.posts-page-btn:hover:not(:disabled) {
+  background: #FFF0EE;
+  border-color: #C9A9A6;
+}
+.posts-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.posts-page-info { font-size: 13px; color: #6B7280; }
 /* ═══════════════════════════════════════════ بطاقات الموبايل */
 .posts-cards { display: none; }
 

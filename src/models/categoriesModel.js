@@ -42,6 +42,13 @@ export const deleteCuisine = async (id) => {
    RECIPE CATEGORIES
 ══════════════════════════════════════════════════════ */
 
+// GET /recipe-categories
+// → [{ id, name, image, cuisine:{id,name}, recipes_count, created_at }]
+export const fetchAllRecipeCategories = async () => {
+  const res = await axiosInstance.get('/recipe-categories');
+  return res.data?.data ?? [];
+};
+
 // GET /recipe-categories/cuisine/{cuisine_id}
 // → [{ id, name, image, cuisine:[], recipes_count, created_at }]
 export const fetchCategoriesByCuisine = async (cuisineId) => {

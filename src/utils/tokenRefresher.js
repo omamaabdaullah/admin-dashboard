@@ -4,7 +4,7 @@
 // نستخدم axios العادي هنا لتجنب circular import مع axiosInstance
 import axios from 'axios';
 
-const API_URL = 'http://127.0.0.1:8000/api';
+const API_URL = import.meta.env.VITE_API_URL;
 const REFRESH_INTERVAL = 5 * 60 * 1000;
 
 let refreshTimer = null;
@@ -18,11 +18,16 @@ const refreshToken = async () => {
   }
 
   try {
-    const response = await axios.post(
-      `${API_URL}/auth/refresh`,
-      {},
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+  const response = await axios.post(
+  `${API_URL}/auth/refresh`,
+  {},
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'ngrok-skip-browser-warning': 'true',
+    },
+  }
+);
 
     const newToken = response.data.data.access_token;
     localStorage.setItem('token', newToken);

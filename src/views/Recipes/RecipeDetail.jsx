@@ -1,14 +1,15 @@
 // src/views/Recipes/RecipeDetail.jsx
 import { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
-  Trash2, Eye, Heart, MessageCircle, Clock, Users, ChefHat,
-  BarChart2, Calendar, ChevronRight, ChevronLeft, Loader2, PlayCircle,
+  Trash2, Heart, MessageCircle, Clock, Users, ChefHat,
+  BarChart2, Calendar, ChevronRight, ChevronLeft, Loader2, AlertCircle,
 } from 'lucide-react';
-import { deleteRecipe } from '../../models/recipesModel';
+import { useRecipeDetail } from '../../controllers/useRecipeDetail';
+import VideoThumb from '../../components/VideoThumb';
 import './RecipeDetail.css';
-
-
+import { useCommentUserActions } from '../../controllers/useCommentUserActions';
+import CommentUserActionsModal, { CommentAuthorButton } from '../../components/CommentUserActionsModal';
 
 const formatDateAr = (iso) => {
   if (!iso) return '—';
@@ -61,10 +62,6 @@ const mapRecipe = (raw) => {
     media,
     chef: {
       name: raw.author ? `الشيف ${raw.author}` : (raw.user?.name ? `الشيف ${raw.user.name}` : '—'),
-      verified: false,
-      avatar: null,
-      recipes: '—',
-      rating: '—',
     },
     ingredients,
     steps,
@@ -74,30 +71,69 @@ const mapRecipe = (raw) => {
       carbs:    raw.nutrition?.carbs,
       fat:      raw.nutrition?.fat,
     },
-    stats: {
-      views: '—',
-      likes: raw.likes_count ?? 0,
-      comments: raw.comments_count ?? 0,
-      rating: '—',
-    },
+    likes: raw.likes_count ?? 0,
   };
 };
 
 const RecipeDetail = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const recipe = mapRecipe(location.state?.recipe);
+  const { id } = useParams();
 
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [error, setError] = useState('');
+  const {
+    recipe: rawRecipe,
+    pageLoading,
+    pageError,
+    comments,
+    commentsTotal,
+    commentsLoad,
+    deletingCmt,
+    confirmDelete,
+    setConfirmDelete,
+    deleting,
+    error,
+    handleDelete,
+    handleDeleteComment,
+    removeCommentsByUserId,
+  } = useRecipeDetail(id);
+
+  const {
+    selectedUser,
+    confirmDeleteUser,
+    setConfirmDeleteUser,
+    showBanModal,
+    setShowBanModal,
+    actionLoading: userActionLoading,
+    actionError: userActionError,
+    actionSuccess: userActionSuccess,
+    openUserActions,
+    closeUserActions,
+    handleBanUser,
+    handleUnbanUser,
+    handleDeleteUser,
+  } = useCommentUserActions(removeCommentsByUserId);
+
+  const role = localStorage.getItem('role');
+  const canDeleteUser = role === 'admin' || role === 'employee';
+
   const [activeMedia, setActiveMedia] = useState(0);
+  const recipe = mapRecipe(rawRecipe);
 
-  if (!recipe) {
+  if (pageLoading) {
     return (
       <div className="rd-page">
         <div className="rd-empty">
-          <p>لم يتم العثور على بيانات الوصفة.</p>
+          <Loader2 size={22} className="rd-spin" />
+          <p>جاري التحميل...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (pageError || !recipe) {
+    return (
+      <div className="rd-page">
+        <div className="rd-empty">
+          <p>{pageError || 'لم يتم العثور على بيانات الوصفة.'}</p>
           <button type="button" className="rd-btn rd-btn--approve" onClick={() => navigate('/recipes')}>
             العودة للوصفات
           </button>
@@ -114,26 +150,14 @@ const RecipeDetail = () => {
     setActiveMedia(index);
   };
 
-  const handleDelete = async () => {
-    setDeleting(true);
-    setError('');
-    try {
-      await deleteRecipe(recipe.id);
-      navigate('/recipes');
-    } catch {
-      setError('فشل حذف الوصفة');
-      setDeleting(false);
-    }
-  };
-
   return (
     <div className="rd-page">
 
       <div className="rd-action-bar">
-<div className="rd-title-group">
-  <div className="rd-title-row">
-    <h1 className="rd-recipe-name">{recipe.name}</h1>
-  </div>
+        <div className="rd-title-group">
+          <div className="rd-title-row">
+            <h1 className="rd-recipe-name">{recipe.name}</h1>
+          </div>
           <div className="rd-breadcrumb">
             <span className="rd-bc-link" onClick={() => navigate('/recipes')}>الوصفات</span>
             <ChevronRight size={12} className="rd-bc-sep" />
@@ -165,6 +189,7 @@ const RecipeDetail = () => {
                   <video
                     key={currentMedia.id ?? currentMedia.url}
                     src={currentMedia.url}
+                    poster={currentMedia.thumbnail || undefined}
                     className="rd-image"
                     controls
                   />
@@ -226,12 +251,7 @@ const RecipeDetail = () => {
                     onClick={() => goToMedia(i)}
                   >
                     {mediaType(m) === 'video' ? (
-                      <>
-                        <video src={m.url} className="rd-media-thumb-img" muted />
-                        <span className="rd-media-thumb-play">
-                          <PlayCircle size={18} />
-                        </span>
-                      </>
+                      <VideoThumb src={m.url} poster={m.thumbnail} playSize={18} />
                     ) : (
                       <img src={m.url} alt="" className="rd-media-thumb-img" />
                     )}
@@ -348,20 +368,69 @@ const RecipeDetail = () => {
           <div className="rd-card">
             <div className="rd-section-title rd-section-title--inline">إحصائيات التفاعل</div>
             <div className="rd-stats-list">
-              {[
-                { icon: <Eye size={18} />, label: 'المشاهدات', val: recipe.stats.views },
-                { icon: <Heart size={18} />, label: 'الإعجابات', val: recipe.stats.likes },
-                { icon: <MessageCircle size={18} />, label: 'التعليقات', val: recipe.stats.comments },
-              ].map((s, i) => (
-                <div key={i} className="rd-stat-row">
-                  <span className="rd-stat-val">{s.val}</span>
-                  <div className="rd-stat-label-group">
-                    <span className="rd-stat-label">{s.label}</span>
-                    <span className="rd-stat-icon">{s.icon}</span>
-                  </div>
+              <div className="rd-stat-row">
+                <span className="rd-stat-val">{recipe.likes}</span>
+                <div className="rd-stat-label-group">
+                  <span className="rd-stat-label">الإعجابات</span>
+                  <span className="rd-stat-icon"><Heart size={18} /></span>
                 </div>
-              ))}
+              </div>
+              <div className="rd-stat-row">
+                <span className="rd-stat-val">{commentsTotal}</span>
+                <div className="rd-stat-label-group">
+                  <span className="rd-stat-label">التعليقات</span>
+                  <span className="rd-stat-icon"><MessageCircle size={18} /></span>
+                </div>
+              </div>
             </div>
+          </div>
+
+          <div className="rd-card">
+            <div className="rd-section-title rd-section-title--inline">
+              التعليقات
+              {commentsTotal > 0 && <span className="rd-comments-count">{commentsTotal}</span>}
+            </div>
+
+            {commentsLoad ? (
+              <div className="rd-comments-loading">
+                <Loader2 size={18} className="rd-spin" />
+                <span>جاري التحميل...</span>
+              </div>
+            ) : comments.length === 0 ? (
+              <div className="rd-comments-empty">
+                <AlertCircle size={16} />
+                <span>لا توجد تعليقات</span>
+              </div>
+            ) : (
+              <div className="rd-comments-list">
+                {comments.map((comment) => (
+                  <div key={comment.id} className="rd-comment">
+                    <div className="rd-comment-header">
+                      <div>
+                        <CommentAuthorButton
+                          user={comment.user}
+                          onClick={openUserActions}
+                          prefix="rd"
+                        />
+                        <p className="rd-comment-time">{comment.created_at}</p>
+                      </div>
+                      <button
+                        type="button"
+                        className="rd-comment-delete"
+                        title="حذف التعليق"
+                        onClick={() => handleDeleteComment(comment.id)}
+                        disabled={deletingCmt === comment.id}
+                      >
+                        {deletingCmt === comment.id
+                          ? <Loader2 size={13} className="rd-spin" />
+                          : <Trash2 size={13} />}
+                      </button>
+                    </div>
+                    <p className="rd-comment-body">{comment.body}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
         </div>
@@ -391,6 +460,22 @@ const RecipeDetail = () => {
           </div>
         </div>
       )}
+
+      <CommentUserActionsModal
+        user={selectedUser}
+        isAdmin={canDeleteUser}
+        confirmDeleteUser={confirmDeleteUser}
+        setConfirmDeleteUser={setConfirmDeleteUser}
+        showBanModal={showBanModal}
+        setShowBanModal={setShowBanModal}
+        actionLoading={userActionLoading}
+        actionError={userActionError}
+        actionSuccess={userActionSuccess}
+        onClose={closeUserActions}
+        onBan={handleBanUser}
+        onUnban={handleUnbanUser}
+        onDelete={handleDeleteUser}
+      />
     </div>
   );
 };

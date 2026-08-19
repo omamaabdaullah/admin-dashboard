@@ -1,7 +1,7 @@
 // src/views/Employees/Employees.jsx
 import { useState } from 'react';
 import {
-  Search, Trash2, Eye, Plus,
+  Search, Trash2, Plus,
   ShieldCheck, Loader2, X, Lock, Mail, User,
 } from 'lucide-react';
 import { useEmployees } from '../../controllers/useEmployees';
@@ -10,29 +10,28 @@ import './Employees.css';
 /* ══════════════════════════════════════════
    بطاقة الموظف
 ══════════════════════════════════════════ */
-const EmployeeCard = ({ employee, onView, onDelete, getInitials, getRoleLabel }) => (
+const EmployeeCard = ({ employee, onDelete, getInitials, formatDate }) => (
   <div className="emp-card">
-    <div className="emp-card-header">
-      <div className="emp-card-identity">
-        <div className="emp-card-info">
-          <span className="emp-card-name">{employee.name}</span>
-          <span className="emp-role-badge">{getRoleLabel(employee.role)}</span>
-        </div>
-        <div className="emp-avatar">{getInitials(employee.name)}</div>
+    <div className="emp-card-main">
+      <div className="emp-avatar">
+        {employee.avatar
+          ? <img src={employee.avatar} alt={employee.name} className="emp-avatar-img" />
+          : getInitials(employee.name)}
       </div>
-    </div>
 
-    <div className="emp-card-details">
-      <div className="emp-detail-row">
-        <span className="emp-detail-label">{employee.email}</span>
+      <div className="emp-card-content">
+        <div className="emp-card-head">
+          <span className="emp-card-name">{employee.name}</span>
+          <span className="emp-role-badge">موظف</span>
+        </div>
+        <p className="emp-card-email">{employee.email}</p>
+        <p className="emp-card-date">
+          تاريخ الانضمام: {formatDate(employee.created_at)}
+        </p>
       </div>
-     
     </div>
 
     <div className="emp-card-footer">
-      <button className="emp-btn emp-btn--view" onClick={() => onView(employee)}>
-        <Eye size={16} /> عرض
-      </button>
       <button className="emp-btn emp-btn--delete" onClick={() => onDelete(employee.id)}>
         <Trash2 size={14} /> حذف
       </button>
@@ -118,42 +117,6 @@ const AddEmployeeModal = ({ onClose, onAdd, loading, error, onClearError }) => {
 };
 
 /* ══════════════════════════════════════════
-   مودال تفاصيل الموظف
-══════════════════════════════════════════ */
-const ViewEmployeeModal = ({ employee, onClose, getInitials, getRoleLabel,  formatDate }) => (
-  <div className="emp-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-    <div className="emp-modal emp-modal--view">
-      <div className="emp-modal-header">
-        <button className="emp-modal-close" onClick={onClose}><X size={18} /></button>
-        <h2 className="emp-modal-title">تفاصيل الموظف</h2>
-      </div>
-
-      <div className="emp-view-body">
-        <div className="emp-view-avatar">{getInitials(employee.name)}</div>
-        <div className="emp-view-name">{employee.name}</div>
-        <span className="emp-role-badge emp-role-badge--lg">{getRoleLabel(employee.role)}</span>
-
-        <div className="emp-view-rows">
-          <div className="emp-view-row">
-            <span className="emp-view-val">{employee.email}</span>
-            <span className="emp-view-key">البريد الإلكتروني</span>
-          </div>
-          <div className="emp-view-row">
-            <span className="emp-view-val">{formatDate(employee.created_at)}</span>
-            <span className="emp-view-key">تاريخ الانضمام</span>
-          </div>
-         
-        </div>
-      </div>
-
-      <div className="emp-modal-actions">
-        <button className="emp-modal-btn emp-modal-btn--cancel" onClick={onClose}>إغلاق</button>
-      </div>
-    </div>
-  </div>
-);
-
-/* ══════════════════════════════════════════
    مودال تأكيد الحذف
 ══════════════════════════════════════════ */
 const ConfirmDeleteModal = ({ onClose, onConfirm, loading }) => (
@@ -177,17 +140,17 @@ const ConfirmDeleteModal = ({ onClose, onConfirm, loading }) => (
 );
 
 /* ══════════════════════════════════════════
-   الصفحة الرئيسية — View نظيف 100%
+   الصفحة الرئيسية
 ══════════════════════════════════════════ */
 const Employees = () => {
   const {
     employees, total, hasMore, loading, loadingMore,
     error, deleteLoading, addLoading, addError,
-    search, showAdd, viewEmployee, confirmDelete,
-    setSearch, setShowAdd, setViewEmployee, setConfirmDelete, setAddError,
+    search, showAdd, confirmDelete,
+    setSearch, setShowAdd, setConfirmDelete, setAddError,
     handleAdd, handleDelete,
     sentinelRef, scrollRootRef,
-    getInitials, formatDate, getRoleLabel, getPermissions,
+    getInitials, formatDate,
   } = useEmployees();
 
   return (
@@ -197,10 +160,9 @@ const Employees = () => {
       <div className="emp-header">
         <div className="emp-header-title-group">
           <h1 className="emp-title">إدارة الموظفين</h1>
-    
         </div>
         <button className="emp-add-btn" onClick={() => setShowAdd(true)}>
-          <Plus size={16} /> إضافة موظف 
+          <Plus size={16} /> إضافة موظف
         </button>
       </div>
 
@@ -235,11 +197,9 @@ const Employees = () => {
             <EmployeeCard
               key={emp.id}
               employee={emp}
-              onView={setViewEmployee}
               onDelete={setConfirmDelete}
               getInitials={getInitials}
-              getRoleLabel={getRoleLabel}
-            
+              formatDate={formatDate}
             />
           ))}
         </div>
@@ -265,17 +225,6 @@ const Employees = () => {
           loading={addLoading}
           error={addError}
           onClearError={() => setAddError('')}
-        />
-      )}
-
-      {viewEmployee && (
-        <ViewEmployeeModal
-          employee={viewEmployee}
-          onClose={() => setViewEmployee(null)}
-          getInitials={getInitials}
-          getRoleLabel={getRoleLabel}
-          getPermissions={getPermissions}
-          formatDate={formatDate}
         />
       )}
 

@@ -96,6 +96,7 @@
   border-radius: 12px;
   cursor: pointer;
   min-width: 150px;
+  max-width: 240px;
   transition: opacity 0.15s;
 }
 .recipes-filter-select svg        { color: #675C5A; flex-shrink: 0; }
@@ -114,6 +115,8 @@
   flex: 1;
   text-align: right;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ═══════════════════════════════════════════ Table card */
@@ -193,6 +196,7 @@
   flex-wrap: nowrap;
 }
 .recipe-thumb {
+  position: relative;
   width: 40px;
   height: 40px;
   background: #FFF0EE;

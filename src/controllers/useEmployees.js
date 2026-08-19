@@ -4,18 +4,6 @@ import { fetchEmployees, createEmployee, deleteEmployee } from '../models/employ
 
 const PER_PAGE = 10;
 
-export const PERMISSIONS_MAP = {
-  admin:           'إدارة الوصفات، المستخدمين، عرض الإحصائيات',
-  employee:        'إدارة الوصفات، إدارة الإشعارات، سجل التدقيق',
-  content_manager: 'إدارة الوصفات، إدارة التصنيفات',
-};
-
-export const ROLE_LABELS = {
-  admin:           'مدير محتوى',
-  employee:        'مشرف نظام',
-  content_manager: 'محرر',
-};
-
 export const useEmployees = () => {
   const [employees,     setEmployees]     = useState([]);
   const [total,         setTotal]         = useState(null);
@@ -28,7 +16,6 @@ export const useEmployees = () => {
   const [addError,      setAddError]      = useState('');
   const [search,        setSearch]        = useState('');
   const [showAdd,       setShowAdd]       = useState(false);
-  const [viewEmployee,  setViewEmployee]  = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
   const searchRef      = useRef('');
@@ -171,21 +158,18 @@ export const useEmployees = () => {
     });
   }, []);
 
-  const getRoleLabel   = useCallback((role) => ROLE_LABELS[role]    || role,        []);
-  const getPermissions = useCallback((role) => PERMISSIONS_MAP[role] || 'إدارة الوصفات', []);
-
   return {
     /* state */
     employees, total, hasMore, loading, loadingMore,
     error, deleteLoading, addLoading, addError,
-    search, showAdd, viewEmployee, confirmDelete,
+    search, showAdd, confirmDelete,
     /* setters */
-    setSearch, setShowAdd, setViewEmployee, setConfirmDelete, setAddError,
+    setSearch, setShowAdd, setConfirmDelete, setAddError,
     /* actions */
     handleAdd, handleDelete,
     /* refs */
     sentinelRef, scrollRootRef,
     /* helpers */
-    getInitials, formatDate, getRoleLabel, getPermissions,
+    getInitials, formatDate,
   };
 };

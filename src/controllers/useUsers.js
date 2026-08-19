@@ -6,130 +6,88 @@ const PER_PAGE = 10;
 
 export const useUsers = () => {
   const [users,         setUsers]         = useState([]);
+  const [meta,          setMeta]          = useState(null);
   const [total,         setTotal]         = useState(null);
-  const [hasMore,       setHasMore]       = useState(false);
   const [loading,       setLoading]       = useState(true);
-  const [loadingMore,   setLoadingMore]   = useState(false);
   const [error,         setError]         = useState('');
   const [actionLoading, setActionLoading] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [confirmBan,    setConfirmBan]    = useState(null);
   const [search,        setSearch]        = useState('');
   const [filterStatus,  setFilterStatus]  = useState('all');
+  const [page,          setPage]          = useState(1);
 
-  const searchRef      = useRef('');
-  const filterRef      = useRef('all');
-  const currentPageRef = useRef(0);
-  const lastPageRef    = useRef(1);
-  const fetchingRef    = useRef(false);
-  const sentinelRef    = useRef(null);
-  const scrollRootRef  = useRef(null); // الـ div الذي يحتوي الـ scroll
+  const searchRef    = useRef('');
+  const filterRef    = useRef('all');
+  const fetchingRef  = useRef(false);
+  const firstLoadRef = useRef(true);
 
   useEffect(() => { searchRef.current = search; },       [search]);
   useEffect(() => { filterRef.current = filterStatus; }, [filterStatus]);
 
-  /* ── جلب صفحة ── */
-  const fetchPage = useCallback((page, reset) => {
+  const loadUsers = useCallback(async (pageNum = 1) => {
     if (fetchingRef.current) return;
     fetchingRef.current = true;
-
-    if (reset) {
-      setLoading(true);
-      setUsers([]);
-      setHasMore(false);
-    } else {
-      setLoadingMore(true);
-    }
+    setLoading(true);
     setError('');
-
-    fetchClients({
-      page,
-      perPage: PER_PAGE,
-      search:  searchRef.current,
-      status:  filterRef.current,
-    })
-      .then(res => {
-        const data    = res.data               ?? [];
-        const curPage = res.meta?.current_page ?? page;
-        const last    = res.meta?.last_page    ?? 1;
-
-        currentPageRef.current = curPage;
-        lastPageRef.current    = last;
-
-        setUsers(prev => reset ? data : [...prev, ...data]);
-        setTotal(res.meta?.total ?? null);
-        setHasMore(curPage < last);
-      })
-      .catch(() => setError('فشل تحميل البيانات، تحقق من الاتصال'))
-      .finally(() => {
-        setLoading(false);
-        setLoadingMore(false);
-        fetchingRef.current = false;
+    try {
+      const res = await fetchClients({
+        page:    pageNum,
+        perPage: PER_PAGE,
+        search:  searchRef.current,
+        status:  filterRef.current,
       });
+      setUsers(res.data ?? []);
+      setMeta(res.meta ?? null);
+      setTotal(res.meta?.total ?? null);
+      setPage(res.meta?.current_page ?? pageNum);
+    } catch {
+      setError('فشل تحميل البيانات، تحقق من الاتصال');
+      setUsers([]);
+      setMeta(null);
+    } finally {
+      setLoading(false);
+      fetchingRef.current = false;
+    }
   }, []);
 
-  /* ── تحميل أول مرة ── */
   useEffect(() => {
-    currentPageRef.current = 0;
-    lastPageRef.current    = 1;
-    const t = setTimeout(() => fetchPage(1, true), 0);
+    if (firstLoadRef.current) {
+      firstLoadRef.current = false;
+      fetchingRef.current = false;
+      const t = setTimeout(() => loadUsers(1), 0);
+      return () => clearTimeout(t);
+    }
+    fetchingRef.current = false;
+    const delay = search.trim() ? 400 : 0;
+    const t = setTimeout(() => loadUsers(1), delay);
     return () => clearTimeout(t);
-  }, [fetchPage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, filterStatus, loadUsers]);
 
-  /* ── إعادة التحميل عند تغيير البحث أو الفلتر ── */
-  useEffect(() => {
-    currentPageRef.current = 0;
-    lastPageRef.current    = 1;
-    fetchingRef.current    = false;
-    const t = setTimeout(() => fetchPage(1, true), 300);
-    return () => clearTimeout(t);
-  }, [search, filterStatus, fetchPage]);
+  const handlePageChange = useCallback((nextPage) => {
+    const last = meta?.last_page ?? 1;
+    if (nextPage < 1 || nextPage > last) return;
+    fetchingRef.current = false;
+    loadUsers(nextPage);
+  }, [loadUsers, meta]);
 
-  /* ── IntersectionObserver ── */
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-
-    // نستخدم scrollRootRef كـ root إذا كان موجوداً
-    // هذا يحل مشكلة overflow-y: auto على الـ container
-    const root = scrollRootRef.current ?? null;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (
-          entry.isIntersecting &&
-          !fetchingRef.current &&
-          currentPageRef.current > 0 &&
-          currentPageRef.current < lastPageRef.current
-        ) {
-          fetchPage(currentPageRef.current + 1, false);
-        }
-      },
-      {
-        root,
-        threshold:   0,
-        rootMargin: '200px', // يبدأ التحميل قبل 200px من نهاية الصفحة
-      }
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [fetchPage]);
-
-  /* ── حظر ── */
-  const handleBan = useCallback(async (id) => {
+  const handleBan = useCallback(async () => {
+    if (!confirmBan?.id) return;
+    const id = confirmBan.id;
     setActionLoading(`${id}_ban`);
     setError('');
     try {
       const updated = await banUser(id);
       setUsers(prev => prev.map(u => u.id === id ? { ...u, status: updated.status } : u));
+      setConfirmBan(null);
     } catch {
       setError('فشل حظر المستخدم');
     } finally {
       setActionLoading(null);
     }
-  }, []);
+  }, [confirmBan]);
 
-  /* ── رفع الحظر ── */
   const handleUnban = useCallback(async (id) => {
     setActionLoading(`${id}_unban`);
     setError('');
@@ -143,21 +101,26 @@ export const useUsers = () => {
     }
   }, []);
 
-  /* ── حذف ── */
   const handleDelete = useCallback(async (id) => {
     setActionLoading(`${id}_delete`);
     setError('');
     try {
       await deleteUser(id);
-      setUsers(prev => prev.filter(u => u.id !== id));
-      setTotal(prev => prev !== null ? prev - 1 : null);
+      const remaining = users.filter(u => u.id !== id);
       setConfirmDelete(null);
+      if (remaining.length === 0 && page > 1) {
+        fetchingRef.current = false;
+        await loadUsers(page - 1);
+      } else {
+        fetchingRef.current = false;
+        await loadUsers(page);
+      }
     } catch {
       setError('فشل حذف المستخدم');
     } finally {
       setActionLoading(null);
     }
-  }, []);
+  }, [loadUsers, page, users]);
 
   const getInitials = useCallback((name) =>
     name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || '?'
@@ -171,14 +134,13 @@ export const useUsers = () => {
   }, []);
 
   return {
-    users, total, hasMore, loading, loadingMore,
-    error, confirmDelete, actionLoading,
-    search, filterStatus,
+    users, meta, total, loading,
+    error, confirmDelete, confirmBan, actionLoading,
+    search, filterStatus, page,
     setSearch, setFilterStatus,
     handleBan, handleUnban, handleDelete,
-    setConfirmDelete,
-    sentinelRef,
-    scrollRootRef,
+    setConfirmDelete, setConfirmBan,
+    handlePageChange,
     getInitials, formatDate,
   };
 };

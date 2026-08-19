@@ -31,6 +31,10 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
   if (status === 'checking') return null;
   if (status === 'invalid')  return <Navigate to="/login" replace />;
 
+  if (role !== 'admin' && role !== 'employee') {
+    return <Navigate to="/login" replace />;
+  }
+
   // تحقق من الـ role إذا كان مطلوباً
   if (requiredRole && role !== requiredRole) {
     return <Navigate to="/dashboard" replace />;

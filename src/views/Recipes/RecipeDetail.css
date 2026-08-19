@@ -635,3 +635,127 @@
 
   .rd-tag { padding: 5px 10px; font-size: 12px; }
 }
+
+/* ══ Comments ══ */
+.rd-comments-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  margin-right: 8px;
+  background: #FFE9E6;
+  color: #9E2016;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.rd-comments-loading,
+.rd-comments-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px;
+  color: #675C5A;
+  font-size: 13px;
+}
+
+.rd-comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.rd-comment {
+  padding: 12px 0;
+  border-bottom: 1px solid #F7DDD9;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rd-comment:last-child { border-bottom: none; }
+
+.rd-comment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rd-comment-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  direction: rtl;
+}
+
+.rd-comment-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 9999px;
+  background: #FFE9E6;
+  color: #9E2016;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.rd-comment-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rd-comment-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #261816;
+  margin: 0;
+}
+
+.rd-comment-time {
+  font-size: 11px;
+  color: #9B8C8A;
+  margin: 0;
+}
+
+.rd-comment-body {
+  font-size: 13px;
+  color: #59413D;
+  margin: 0;
+  line-height: 1.5;
+  text-align: right;
+  padding-right: 38px;
+}
+
+.rd-comment-delete {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: none;
+  background: #FEE2E2;
+  color: #BA1A1A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.rd-comment-delete:hover:not(:disabled) { background: #FECACA; }
+.rd-comment-delete:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.pd-comment-time {
+  margin: 2px 38px 0 0;
+  font-size: 11px;
+  color: #9B8C8A;
+}

@@ -2,9 +2,16 @@
 import axios from 'axios';
 import { stopTokenRefresh } from './tokenRefresher';
 
+
+axios.defaults.headers.common['ngrok-skip-browser-warning'] = 'true';
+
+
 const axiosInstance = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api',
-  headers: { Accept: 'application/json' },
+  baseURL: import.meta.env.VITE_API_URL,
+ headers: {
+  Accept: 'application/json',
+  'ngrok-skip-browser-warning': 'true',
+},
 });
 
 // قبل كل طلب — أضف الـ token تلقائياً

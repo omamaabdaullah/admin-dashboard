@@ -1,0 +1,189 @@
+/* src/components/CommentUserActionsModal.css */
+
+.pd-comment-user--link,
+.rd-comment-user--link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: inherit;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  direction: rtl;
+  transition: opacity 0.15s;
+}
+
+.pd-comment-user--link:hover,
+.rd-comment-user--link:hover {
+  opacity: 0.85;
+}
+
+.pd-comment-user--link:hover .pd-comment-name,
+.rd-comment-user--link:hover .rd-comment-name {
+  color: #9E2016;
+  text-decoration: underline;
+}
+
+.cua-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(38, 24, 22, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+.cua-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  width: 420px;
+  max-width: 92vw;
+  direction: rtl;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cua-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cua-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #261816;
+}
+
+.cua-subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #675C5A;
+}
+
+.cua-close {
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 8px;
+  background: #FFF0EE;
+  color: #9E2016;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.cua-user-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #FFF8F7;
+  border: 1px solid #F0E8E6;
+  border-radius: 10px;
+}
+
+.cua-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  background: #FFE9E6;
+  color: #9E2016;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.cua-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cua-user-name {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #261816;
+}
+
+.cua-user-hint {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #9B8C8A;
+}
+
+.cua-alert {
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.cua-alert--error {
+  background: #FEF2F2;
+  color: #BA1A1A;
+}
+
+.cua-alert--success {
+  background: #F0FDF4;
+  color: #16A34A;
+}
+
+.cua-actions,
+.cua-confirm-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cua-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s;
+}
+
+.cua-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cua-btn--ban    { background: #FEF3C7; color: #B45309; }
+.cua-btn--unban  { background: #F0FDF4; color: #16A34A; }
+.cua-btn--delete { background: #FEE2E2; color: #BA1A1A; }
+.cua-btn--cancel { background: #F3F4F6; color: #675C5A; }
+
+.cua-confirm-text {
+  margin: 0;
+  font-size: 14px;
+  color: #675C5A;
+  line-height: 1.6;
+}
+
+.cua-spin {
+  animation: cua-spin 0.8s linear infinite;
+}
+
+@keyframes cua-spin {
+  to { transform: rotate(360deg); }
+}

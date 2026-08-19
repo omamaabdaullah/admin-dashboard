@@ -12,7 +12,7 @@
 /* ======================== بطاقات الإحصائيات ======================== */
 .stat-cards {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   flex-shrink: 0;
 }
@@ -93,6 +93,12 @@
 
 .dashboard-row--2cols {
   grid-template-columns: 340px 1fr;
+  align-items: stretch;
+  height: 300px;
+}
+
+.dashboard-row--2cols .widget-card {
+  height: 100%;
 }
 
 .dashboard-row--3cols {
@@ -185,6 +191,10 @@
   overflow-y: auto;
 }
 
+.recipe-list::-webkit-scrollbar { width: 4px; }
+.recipe-list::-webkit-scrollbar-track { background: transparent; }
+.recipe-list::-webkit-scrollbar-thumb { background: #E1BFB9; border-radius: 4px; }
+
 .recipe-item {
   display: flex;
   align-items: center;
@@ -242,30 +252,31 @@
 }
 
 /* ======================== الرسم البياني ======================== */
-.chart-container {
+.dashboard-chart {
   display: flex;
   flex-direction: column;
-  gap: 8px;
   flex: 1;
   min-height: 0;
-  padding-bottom: 4px;
+  direction: ltr;
 }
 
-.chart-svg {
+.dashboard-chart-svg {
   width: 100%;
   flex: 1;
   min-height: 0;
+  height: auto;
   display: block;
 }
 
-.chart-labels {
+.dashboard-chart-labels {
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
-  padding: 0 4px;
+  padding: 6px 4px 0;
   flex-shrink: 0;
 }
 
-.chart-labels span {
+.dashboard-chart-labels span {
   font-size: 11px;
   color: #675C5A;
 }
@@ -550,5 +561,94 @@
   .dashboard-row--3cols,
   .dashboard-row--2equal {
     grid-template-columns: 1fr;
+  }
+  .dashboard-row--2cols {
+    height: auto;
+  }
+  .dashboard-row--2cols .widget-card {
+    height: 280px;
+  }
+}
+
+@media (max-width: 767px) {
+  .dashboard {
+    gap: 10px;
+  }
+
+  .stat-cards {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .stat-card {
+    padding: 12px 14px;
+  }
+
+  .stat-card-value {
+    font-size: 20px;
+  }
+
+  .stat-card-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .widget-card {
+    padding: 12px 14px;
+  }
+
+  .widget-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .widget-title {
+    font-size: 14px;
+  }
+
+  .dashboard-row--2cols .widget-card {
+    height: auto;
+    min-height: 240px;
+  }
+
+  .top-recipe-item {
+    padding: 8px 10px;
+  }
+
+  .category-bar-header {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .dashboard-chart {
+    overflow-x: auto;
+  }
+
+  .dashboard-chart-svg {
+    min-width: 320px;
+  }
+
+  .engagement-cards {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-card-value {
+    font-size: 18px;
+  }
+
+  .stat-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  .widget-card {
+    padding: 10px 12px;
+    border-radius: 12px;
+  }
+
+  .engagement-value {
+    font-size: 18px;
   }
 }

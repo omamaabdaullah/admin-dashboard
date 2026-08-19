@@ -1,43 +1,37 @@
 // src/views/Notifications/Notifications.jsx
-import { useState } from 'react';
-import { Bell, Trash2, Download, Loader2, ChevronRight, ChevronLeft } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Bell, Trash2, Download, Loader2, ChevronRight, ChevronLeft, Search, X } from 'lucide-react';
+import {
+  fetchSentNotifications,
+  sendNotification,
+  deleteSentNotification,
+} from '../../models/notificationsModel';
+import { fetchClients, fetchAllClients, fetchClientGroup } from '../../models/usersModel';
 import './Notifications.css';
 
-/* ─── بيانات ثابتة مؤقتة (تُستبدل بـ API لاحقاً) ─── */
-const MOCK_NOTIFICATIONS = [
-  { id: 1,  title: 'وصفتك تمت الموافقة عليها',            recipients: 'مستخدم محدد',      recipientType: 'specific', date: '2024/01/15', status: 'sent' },
-  { id: 2,  title: 'تحدي الطهي الأسبوعي',                 recipients: 'جميع المستخدمين',  recipientType: 'users',    date: '2024/01/14', status: 'sent' },
-  { id: 3,  title: 'وصفتك رُفضت',                          recipients: 'مستخدم محدد',      recipientType: 'specific', date: '2024/01/13', status: 'sent' },
-  { id: 4,  title: 'تحديث سياسة المنصة',                  recipients: 'الكل',             recipientType: 'all',      date: '2024/01/12', status: 'sending' },
-  { id: 5,  title: 'تذكير: وصفات قيد المراجعة',           recipients: 'الموظفون',         recipientType: 'employees',date: '2024/01/11', status: 'sent' },
-  { id: 6,  title: 'ميزة جديدة: وضع الطبخ الذكي',         recipients: 'جميع المستخدمين',  recipientType: 'users',    date: '2024/01/10', status: 'sent' },
-  { id: 7,  title: 'تنبيه: نشاط مشبوه على حساب',          recipients: 'مستخدم محدد',      recipientType: 'specific', date: '2024/01/09', status: 'sent' },
-  { id: 8,  title: 'تحديث التطبيق — إصدار 2.1',           recipients: 'الكل',             recipientType: 'all',      date: '2024/01/08', status: 'sent' },
-  { id: 9,  title: 'تذكير: إكمال الملف الشخصي',           recipients: 'جميع المستخدمين',  recipientType: 'users',    date: '2024/01/07', status: 'sent' },
-  { id: 10, title: 'تقرير الأداء الأسبوعي',               recipients: 'الموظفون',         recipientType: 'employees',date: '2024/01/06', status: 'sent' },
+const RECIPIENT_OPTIONS = [
+  { key: 'all',      label: 'كل المستخدمين' },
+  { key: 'specific', label: 'مستخدم محدد'   },
 ];
 
-const PAGE_SIZE = 5;
-
-const RECIPIENT_OPTIONS = [
-  { key: 'users',    label: 'كل المستخدمين' },
-  { key: 'specific', label: 'مستخدم محدد'  },
+const USER_GROUPS = [
+  { key: 'active', label: 'كل العملاء النشطين' },
+  { key: 'new7',   label: 'جدد آخر 7 أيام' },
+  { key: 'new30',  label: 'جدد آخر 30 يومًا' },
 ];
 
 const RECIPIENT_COLORS = {
-  all:       { bg: '#FFE9E6', color: '#9E2016' },
-  users:     { bg: '#FFE9E6', color: '#9E2016' },
-  employees: { bg: '#FFE9E6', color: '#9E2016' },
-  specific:  { bg: '#FFE9E6', color: '#9E2016' },
+  all:      { bg: '#FFE9E6', color: '#9E2016' },
+  specific: { bg: '#FFE9E6', color: '#9E2016' },
 };
 
 const STATUS_CONFIG = {
-  sent:    { label: 'تم الإرسال',    bg: '#F0FDF4', color: '#16A34A' },
+  sent:    { label: 'تم الإرسال',   bg: '#F0FDF4', color: '#16A34A' },
   sending: { label: 'جاري الإرسال', bg: '#FEF5ED', color: '#E67E22' },
-  failed:  { label: 'فشل الإرسال',  bg: '#FFF0EE', color: '#C0392B' },
+  failed:  { label: 'فشل الإرسال', bg: '#FFF0EE', color: '#C0392B' },
 };
 
-/* ─── مكوّن الإشعار في الجدول ─── */
+/* ─── صف الإشعار ─── */
 const NotifRow = ({ notif, onDelete, deleteLoading }) => {
   const status = STATUS_CONFIG[notif.status] ?? STATUS_CONFIG.sent;
   const recip  = RECIPIENT_COLORS[notif.recipientType] ?? RECIPIENT_COLORS.all;
@@ -53,8 +47,7 @@ const NotifRow = ({ notif, onDelete, deleteLoading }) => {
         >
           {deleteLoading === notif.id
             ? <Loader2 size={16} className="notif-spin" />
-            : <Trash2 size={16} />
-          }
+            : <Trash2 size={16} />}
         </button>
       </td>
       <td className="ncol-status">
@@ -77,26 +70,193 @@ const NotifRow = ({ notif, onDelete, deleteLoading }) => {
   );
 };
 
+/* ─── بطاقة الإشعار (موبايل) ─── */
+const NotifCard = ({ notif, onDelete, deleteLoading }) => {
+  const status = STATUS_CONFIG[notif.status] ?? STATUS_CONFIG.sent;
+  const recip  = RECIPIENT_COLORS[notif.recipientType] ?? RECIPIENT_COLORS.all;
+
+  return (
+    <div className="notif-card">
+      <div className="notif-card-top">
+        <span className="notif-title-text">{notif.title}</span>
+        <button
+          className="notif-delete-btn"
+          onClick={() => onDelete(notif.id)}
+          disabled={deleteLoading === notif.id}
+          title="حذف الإشعار"
+        >
+          {deleteLoading === notif.id
+            ? <Loader2 size={16} className="notif-spin" />
+            : <Trash2 size={16} />}
+        </button>
+      </div>
+      <div className="notif-card-meta">
+        <span className="notif-recip-pill" style={{ background: recip.bg, color: recip.color }}>
+          {notif.recipients}
+        </span>
+        <span className="notif-status-pill" style={{ background: status.bg, color: status.color }}>
+          {status.label}
+        </span>
+      </div>
+      <span className="notif-date">{notif.date}</span>
+    </div>
+  );
+};
+
 /* ─── الصفحة الرئيسية ─── */
 const Notifications = () => {
-  /* ── حالة الفورم ── */
-  const [recipientType, setRecipientType] = useState('users');
+  /* ── فورم الإرسال ── */
+  const [recipientType, setRecipientType] = useState('all');
   const [notifTitle,    setNotifTitle]    = useState('');
   const [notifBody,     setNotifBody]     = useState('');
+  const [usersSearch,   setUsersSearch]   = useState('');
+  const [userOptions,   setUserOptions]   = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [appliedGroup,  setAppliedGroup]  = useState(null);
+  const [groupUsers,    setGroupUsers]    = useState([]);
+  const [excludedIds,   setExcludedIds]   = useState([]);
+  const [groupLoading,  setGroupLoading]  = useState(false);
+  const [allActiveCache, setAllActiveCache] = useState(null);
+  const [usersLoading,  setUsersLoading]  = useState(false);
   const [sendLoading,   setSendLoading]   = useState(false);
   const [sendSuccess,   setSendSuccess]   = useState(false);
   const [sendError,     setSendError]     = useState('');
 
-  /* ── حالة الجدول ── */
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  /* ── السجل ── */
+  const [notifications, setNotifications] = useState([]);
+  const [pageMeta,      setPageMeta]      = useState(null);
   const [currentPage,   setCurrentPage]   = useState(1);
+  const [listLoading,   setListLoading]   = useState(true);
+  const [listError,     setListError]     = useState('');
   const [deleteLoading, setDeleteLoading] = useState(null);
 
+  /* ── تحميل السجل ── */
+  const loadLog = useCallback(async (page = 1) => {
+    setListLoading(true);
+    setListError('');
+    try {
+      const result = await fetchSentNotifications({ page });
+      setNotifications(result.data);
+      setPageMeta(result.meta);
+      setCurrentPage(result.meta?.current_page ?? page);
+    } catch {
+      setListError('فشل تحميل سجل الإشعارات');
+    } finally {
+      setListLoading(false);
+    }
+  }, []);
 
+  useEffect(() => { loadLog(1); }, [loadLog]);
 
-  /* ── pagination ── */
-  const totalPages  = Math.ceil(notifications.length / PAGE_SIZE);
-  const paginated   = notifications.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  useEffect(() => {
+    if (recipientType !== 'specific') return undefined;
+
+    let cancelled = false;
+    setUsersLoading(true);
+
+    const timer = setTimeout(async () => {
+      try {
+        const result = await fetchClients({
+          page: 1,
+          perPage: 30,
+          search: usersSearch.trim(),
+          status: 'active',
+        });
+        if (!cancelled) {
+          setUserOptions(result.data ?? []);
+        }
+      } catch {
+        if (!cancelled) {
+          setUserOptions([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setUsersLoading(false);
+        }
+      }
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [recipientType, usersSearch]);
+
+  const groupUserIds = groupUsers.map((user) => user.id);
+  const extraUsers = selectedUsers.filter((user) => !groupUserIds.includes(user.id));
+  const effectiveUsers = [
+    ...groupUsers.filter((user) => !excludedIds.includes(user.id)),
+    ...extraUsers,
+  ];
+
+  const isUserSelected = useCallback((userId) => {
+    const inGroup = groupUserIds.includes(userId) && !excludedIds.includes(userId);
+    const inManual = selectedUsers.some((user) => user.id === userId);
+    return inGroup || inManual;
+  }, [groupUserIds, excludedIds, selectedUsers]);
+
+  const resetSpecificSelection = useCallback(() => {
+    setUsersSearch('');
+    setSelectedUsers([]);
+    setUserOptions([]);
+    setAppliedGroup(null);
+    setGroupUsers([]);
+    setExcludedIds([]);
+  }, []);
+
+  const toggleUserSelection = useCallback((user) => {
+    if (groupUsers.some((g) => g.id === user.id)) {
+      setExcludedIds((prev) => (
+        prev.includes(user.id)
+          ? prev.filter((id) => id !== user.id)
+          : [...prev, user.id]
+      ));
+    } else {
+      setSelectedUsers((prev) => {
+        const exists = prev.some((u) => u.id === user.id);
+        if (exists) return prev.filter((u) => u.id !== user.id);
+        return [...prev, user];
+      });
+    }
+    setSendError('');
+  }, [groupUsers]);
+
+  const removeSelectedUser = useCallback((userId) => {
+    setSelectedUsers((prev) => prev.filter((u) => u.id !== userId));
+  }, []);
+
+  const clearAppliedGroup = useCallback(() => {
+    setAppliedGroup(null);
+    setGroupUsers([]);
+    setExcludedIds([]);
+  }, []);
+
+  const applyGroup = useCallback(async (groupKey) => {
+    if (appliedGroup === groupKey) {
+      clearAppliedGroup();
+      return;
+    }
+
+    setGroupLoading(true);
+    setSendError('');
+    try {
+      const cached = allActiveCache ?? await fetchAllClients({ status: 'active' });
+      if (!allActiveCache) setAllActiveCache(cached);
+      const users = await fetchClientGroup(groupKey, cached);
+      setAppliedGroup(groupKey);
+      setGroupUsers(users);
+      setExcludedIds([]);
+      if (users.length === 0) {
+        setAppliedGroup(null);
+        setGroupUsers([]);
+        setSendError('لا يوجد مستخدمون في هذه الفئة حالياً');
+      }
+    } catch {
+      setSendError('فشل تحميل مستخدمي الفئة، يرجى المحاولة مرة أخرى');
+    } finally {
+      setGroupLoading(false);
+    }
+  }, [appliedGroup, allActiveCache, clearAppliedGroup]);
 
   /* ── إرسال ── */
   const handleSend = async () => {
@@ -104,25 +264,26 @@ const Notifications = () => {
       setSendError('يرجى تعبئة العنوان ونص الرسالة');
       return;
     }
+    if (recipientType === 'specific' && effectiveUsers.length === 0) {
+      setSendError('يرجى اختيار فئة أو مستخدم واحد على الأقل');
+      return;
+    }
     setSendLoading(true);
     setSendError('');
     try {
-      // TODO: await sendNotification({ recipientType, title: notifTitle, body: notifBody });
-      await new Promise(r => setTimeout(r, 900)); // محاكاة
-      const newNotif = {
-        id:            Date.now(),
-        title:         notifTitle,
-        recipients:    RECIPIENT_OPTIONS.find(o => o.key === recipientType)?.label ?? 'الكل',
+      await sendNotification({
         recipientType,
-        date:          new Date().toISOString().slice(0, 10).replace(/-/g, '/'),
-        status:        'sent',
-      };
-      setNotifications(prev => [newNotif, ...prev]);
+        userIds: effectiveUsers.map((u) => u.id),
+        title:   notifTitle,
+        message: notifBody,
+      });
       setNotifTitle('');
       setNotifBody('');
-      setRecipientType('users');
+      setRecipientType('all');
+      resetSpecificSelection();
       setSendSuccess(true);
       setTimeout(() => setSendSuccess(false), 2500);
+      await loadLog(1);
     } catch {
       setSendError('فشل الإرسال، يرجى المحاولة مرة أخرى');
     } finally {
@@ -134,23 +295,28 @@ const Notifications = () => {
   const handleDelete = async (id) => {
     setDeleteLoading(id);
     try {
-      // TODO: await deleteNotification(id);
-      await new Promise(r => setTimeout(r, 500));
-      setNotifications(prev => prev.filter(n => n.id !== id));
-      if (paginated.length === 1 && currentPage > 1) setCurrentPage(p => p - 1);
+      await deleteSentNotification(id);
+      const newPage = notifications.length === 1 && currentPage > 1
+        ? currentPage - 1
+        : currentPage;
+      await loadLog(newPage);
+    } catch {
+      // تجاهل — السجل يُعاد تحميله عند النجاح فقط
     } finally {
       setDeleteLoading(null);
     }
   };
 
-  /* ── تحميل السجل ── */
+  /* ── تحميل CSV ── */
   const handleDownload = () => {
-    const rows  = ['العنوان,المستلمون,التاريخ,الحالة'];
-    notifications.forEach(n => {
+    if (notifications.length === 0) return;
+    const rows = ['العنوان,المستلمون,التاريخ,الحالة'];
+    notifications.forEach((n) => {
       const st = STATUS_CONFIG[n.status]?.label ?? n.status;
       rows.push(`"${n.title}","${n.recipients}","${n.date}","${st}"`);
     });
-    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const csvContent = `\uFEFF${rows.join('\n')}`;
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href     = url;
@@ -159,13 +325,14 @@ const Notifications = () => {
     URL.revokeObjectURL(url);
   };
 
+  const totalPages = pageMeta?.last_page ?? 1;
+
   return (
     <div className="notif-page">
 
       {/* ═══ العنوان ═══ */}
       <div className="notif-page-header">
         <h1 className="notif-page-title">إدارة الإشعارات</h1>
-        
       </div>
 
       {/* ═══ القسمان الرئيسيان ═══ */}
@@ -184,12 +351,16 @@ const Notifications = () => {
             <div className="notif-field">
               <label className="notif-label">المستلمون</label>
               <div className="notif-recipients-grid">
-                {RECIPIENT_OPTIONS.map(opt => (
+                {RECIPIENT_OPTIONS.map((opt) => (
                   <button
                     key={opt.key}
                     type="button"
                     className={`notif-recip-btn${recipientType === opt.key ? ' notif-recip-btn--active' : ''}`}
-                    onClick={() => setRecipientType(opt.key)}
+                    onClick={() => {
+                      setRecipientType(opt.key);
+                      if (opt.key !== 'specific') resetSpecificSelection();
+                    }}
+                    disabled={sendLoading}
                   >
                     <span className={`notif-recip-radio${recipientType === opt.key ? ' notif-recip-radio--active' : ''}`} />
                     {opt.label}
@@ -197,6 +368,121 @@ const Notifications = () => {
                 ))}
               </div>
             </div>
+
+            {/* اختيار مستخدمين محددين */}
+            {recipientType === 'specific' && (
+              <div className="notif-specific-box">
+                <div className="notif-field">
+                  <label className="notif-label">فئات جاهزة</label>
+                  <div className="notif-groups">
+                    {USER_GROUPS.map((group) => (
+                      <button
+                        key={group.key}
+                        type="button"
+                        className={`notif-group-btn${appliedGroup === group.key ? ' notif-group-btn--active' : ''}`}
+                        onClick={() => applyGroup(group.key)}
+                        disabled={sendLoading || groupLoading}
+                      >
+                        {group.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="notif-field">
+                  <label className="notif-label">أو اختر أفراداً</label>
+                  <div className="notif-user-search-wrap">
+                    <Search size={16} className="notif-user-search-icon" />
+                    <input
+                      className="notif-input notif-input--with-icon"
+                      type="text"
+                      placeholder="ابحث بالاسم أو البريد الإلكتروني..."
+                      value={usersSearch}
+                      onChange={(e) => setUsersSearch(e.target.value)}
+                      disabled={sendLoading || groupLoading}
+                    />
+                  </div>
+                </div>
+
+                {(appliedGroup || extraUsers.length > 0) && (
+                  <div className="notif-selected-users">
+                    {appliedGroup && (
+                      <button
+                        type="button"
+                        className="notif-selected-chip notif-selected-chip--group"
+                        onClick={clearAppliedGroup}
+                        disabled={sendLoading || groupLoading}
+                        title="إزالة الفئة"
+                      >
+                        <X size={12} />
+                        <span>
+                          {USER_GROUPS.find((g) => g.key === appliedGroup)?.label}
+                          {' · '}
+                          {groupUsers.length - excludedIds.length}
+                          {excludedIds.length > 0 ? ` من ${groupUsers.length}` : ''}
+                        </span>
+                      </button>
+                    )}
+                    {extraUsers.map((user) => (
+                      <button
+                        key={user.id}
+                        type="button"
+                        className="notif-selected-chip"
+                        onClick={() => removeSelectedUser(user.id)}
+                        disabled={sendLoading}
+                        title="إزالة المستخدم"
+                      >
+                        <X size={12} />
+                        <span>{user.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {groupLoading ? (
+                  <div className="notif-users-empty notif-users-empty--box">
+                    <Loader2 size={18} className="notif-spin" />
+                    <span>جاري تحميل الفئة...</span>
+                  </div>
+                ) : null}
+
+                {effectiveUsers.length > 0 && (
+                  <p className="notif-selected-count">
+                    سيتم الإرسال إلى {effectiveUsers.length} مستخدم
+                  </p>
+                )}
+
+                <div className="notif-users-list">
+                  {usersLoading ? (
+                    <div className="notif-users-empty">
+                      <Loader2 size={18} className="notif-spin" />
+                      <span>جاري تحميل المستخدمين...</span>
+                    </div>
+                  ) : userOptions.length === 0 ? (
+                    <div className="notif-users-empty">
+                      <span>لا يوجد مستخدمون مطابقون</span>
+                    </div>
+                  ) : userOptions.map((user) => {
+                    const isSelected = isUserSelected(user.id);
+                    return (
+                      <button
+                        key={user.id}
+                        type="button"
+                        className={`notif-user-option${isSelected ? ' notif-user-option--selected' : ''}`}
+                        onClick={() => toggleUserSelection(user)}
+                        disabled={sendLoading || groupLoading}
+                      >
+                        <div className="notif-user-option-main">
+                          <span className="notif-user-option-name">{user.name}</span>
+                          <span className="notif-user-option-email">{user.email}</span>
+                        </div>
+                        <span className={`notif-user-option-check${isSelected ? ' notif-user-option-check--selected' : ''}`} />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* العنوان */}
             <div className="notif-field">
@@ -206,7 +492,8 @@ const Notifications = () => {
                 type="text"
                 placeholder="أدخل عنواناً جذاباً..."
                 value={notifTitle}
-                onChange={e => { setNotifTitle(e.target.value); setSendError(''); }}
+                onChange={(e) => { setNotifTitle(e.target.value); setSendError(''); }}
+                disabled={sendLoading}
               />
             </div>
 
@@ -218,7 +505,8 @@ const Notifications = () => {
                 placeholder="اكتب تفاصيل الإشعار هنا..."
                 rows={5}
                 value={notifBody}
-                onChange={e => { setNotifBody(e.target.value); setSendError(''); }}
+                onChange={(e) => { setNotifBody(e.target.value); setSendError(''); }}
+                disabled={sendLoading}
               />
             </div>
 
@@ -229,12 +517,11 @@ const Notifications = () => {
             <button
               className={`notif-send-btn${sendSuccess ? ' notif-send-btn--success' : ''}`}
               onClick={handleSend}
-              disabled={sendLoading}
+              disabled={sendLoading || groupLoading}
             >
               {sendLoading
                 ? <Loader2 size={18} className="notif-spin" />
-                : <Bell size={18} />
-              }
+                : <Bell size={18} />}
               {sendLoading ? 'جاري الإرسال...' : sendSuccess ? '✓ تم الإرسال بنجاح' : 'إرسال الإشعار'}
             </button>
 
@@ -246,7 +533,11 @@ const Notifications = () => {
 
           {/* رأس السجل */}
           <div className="notif-log-header">
-            <button className="notif-download-btn" onClick={handleDownload}>
+            <button
+              className="notif-download-btn"
+              onClick={handleDownload}
+              disabled={notifications.length === 0}
+            >
               <Download size={12} />
               تحميل السجل
             </button>
@@ -269,14 +560,27 @@ const Notifications = () => {
                 </tr>
               </thead>
               <tbody>
-                {paginated.length === 0 ? (
+                {listLoading ? (
+                  <tr>
+                    <td colSpan={5} className="notif-empty">
+                      <Loader2 size={24} className="notif-spin" />
+                      <span>جاري التحميل...</span>
+                    </td>
+                  </tr>
+                ) : listError ? (
+                  <tr>
+                    <td colSpan={5} className="notif-empty">
+                      <span style={{ color: '#C0392B' }}>{listError}</span>
+                    </td>
+                  </tr>
+                ) : notifications.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="notif-empty">
                       <Bell size={32} />
                       <span>لا توجد إشعارات مُرسلة بعد</span>
                     </td>
                   </tr>
-                ) : paginated.map(notif => (
+                ) : notifications.map((notif) => (
                   <NotifRow
                     key={notif.id}
                     notif={notif}
@@ -288,42 +592,69 @@ const Notifications = () => {
             </table>
           </div>
 
-          {/* Pagination */}
-          <div className="notif-pagination">
-            <div className="notif-page-btns">
-              <button
-                className="notif-page-btn"
-                onClick={() => setCurrentPage(p => p - 1)}
-                disabled={currentPage === 1}
-              >
-                <ChevronRight size={14} />
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                <button
-                  key={p}
-                  className={`notif-page-btn${currentPage === p ? ' notif-page-btn--active' : ''}`}
-                  onClick={() => setCurrentPage(p)}
-                >
-                  {p}
-                </button>
-              ))}
-              <button
-                className="notif-page-btn"
-                onClick={() => setCurrentPage(p => p + 1)}
-                disabled={currentPage === totalPages}
-              >
-                <ChevronLeft size={14} />
-              </button>
-            </div>
-            <span className="notif-page-info">
-              عرض {Math.min(paginated.length, PAGE_SIZE)} من أصل {notifications.length} إشعار
-            </span>
+          <div className="notif-cards-mobile">
+            {listLoading ? (
+              <div className="notif-empty">
+                <Loader2 size={24} className="notif-spin" />
+                <span>جاري التحميل...</span>
+              </div>
+            ) : listError ? (
+              <div className="notif-empty">
+                <span style={{ color: '#C0392B' }}>{listError}</span>
+              </div>
+            ) : notifications.length === 0 ? (
+              <div className="notif-empty">
+                <Bell size={32} />
+                <span>لا توجد إشعارات مُرسلة بعد</span>
+              </div>
+            ) : (
+              notifications.map((notif) => (
+                <NotifCard
+                  key={notif.id}
+                  notif={notif}
+                  onDelete={handleDelete}
+                  deleteLoading={deleteLoading}
+                />
+              ))
+            )}
           </div>
+
+          {/* Pagination */}
+          {!listLoading && totalPages > 1 && (
+            <div className="notif-pagination">
+              <div className="notif-page-btns">
+                <button
+                  className="notif-page-btn"
+                  onClick={() => loadLog(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronRight size={14} />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <button
+                    key={p}
+                    className={`notif-page-btn${currentPage === p ? ' notif-page-btn--active' : ''}`}
+                    onClick={() => loadLog(p)}
+                  >
+                    {p}
+                  </button>
+                ))}
+                <button
+                  className="notif-page-btn"
+                  onClick={() => loadLog(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  <ChevronLeft size={14} />
+                </button>
+              </div>
+              <span className="notif-page-info">
+                {pageMeta?.total ?? notifications.length} إشعار
+              </span>
+            </div>
+          )}
 
         </div>
       </div>
-
-    
 
     </div>
   );

@@ -1,6 +1,6 @@
 // src/views/Auth/Login.jsx
 import { useState } from 'react';
-import { Mail, Lock, Check, Shield, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, Check, Shield, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../controllers/useAuth';
 import LoginImg from '../../assets/photo.jpg';
 import { Link , useNavigate } from 'react-router-dom';
@@ -10,6 +10,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const { handleLogin, loading, error } = useAuth();
 
   const handleSubmit = async (e) => {
@@ -110,13 +111,21 @@ const Login = () => {
               <div className="input-wrapper">
                 <Lock className="input-icon" size={20} />
                 <input
-                  type="password"
-                  className="custom-input"
+                  type={showPassword ? 'text' : 'password'}
+                  className="custom-input custom-input--password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
+                <button
+                  type="button"
+                  className="password-eye-toggle"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? 'إخفاء كلمة المرور' : 'إظهار كلمة المرور'}
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
               </div>
             </div>
 

@@ -3,11 +3,16 @@ import { useLocation, useParams } from 'react-router-dom';
 import {
   CheckCircle, XCircle, Trash2, ChevronRight,
   Clock, Users, ChefHat, Heart, MessageCircle,
-  Star, ImageOff, X, Send, Loader2, AlertCircle,
+  ImageOff, X, Send, Loader2, AlertCircle,
 } from 'lucide-react';
 import { useState } from 'react';
 import { usePostDetail,  REJECT_REASONS } from '../../controllers/usePostDetail';
 import './PostDetail.css';
+import { useCommentUserActions } from '../../controllers/useCommentUserActions';
+import CommentUserActionsModal, { CommentAuthorButton } from '../../components/CommentUserActionsModal';
+import VideoThumb from '../../components/VideoThumb';
+import { isVideoMedia } from '../../utils/videoThumbnail';
+
 
 const RejectModal = ({ post, onConfirm, onClose, loading }) => {
   const [selectedReason, setSelectedReason] = useState('');
@@ -110,7 +115,28 @@ const PostDetail = () => {
     deletingCmt,
     handleApprove, handleReject, handleDelete, handleDeleteComment,
     formatDate, statusCfg, navigate,
+    removeCommentsByUserId,
   } = usePostDetail(id, location.state?.post ?? null);
+
+  const {
+    selectedUser,
+    confirmDeleteUser,
+    setConfirmDeleteUser,
+    showBanModal,
+    setShowBanModal,
+    actionLoading: userActionLoading,
+    actionError: userActionError,
+    actionSuccess: userActionSuccess,
+    openUserActions,
+    closeUserActions,
+    handleBanUser,
+    handleUnbanUser,
+    handleDeleteUser,
+  } = useCommentUserActions(removeCommentsByUserId);
+
+  const role = localStorage.getItem('role');
+  const canDeleteUser = role === 'admin' || role === 'employee';
+
 
   if (pageLoading) return (
     <div className="pd-page pd-page--center">
@@ -128,7 +154,7 @@ const PostDetail = () => {
 
   if (!post) return null;
 
-  const isPublished = post.status === 'approved';
+  const isReviewed = post.status === 'approved' || post.status === 'rejected';
 
   return (
     <div className="pd-page">
@@ -153,7 +179,7 @@ const PostDetail = () => {
           <button
             className="pd-btn pd-btn--approve"
             onClick={handleApprove}
-            disabled={isPublished || actionLoading !== null}
+            disabled={isReviewed || actionLoading !== null}
           >
             {actionLoading === 'approve'
               ? <Loader2 size={15} className="pd-spin" /> : <CheckCircle size={15} />}
@@ -162,7 +188,7 @@ const PostDetail = () => {
           <button
             className="pd-btn pd-btn--reject"
             onClick={() => setShowReject(true)}
-            disabled={isPublished || actionLoading !== null}
+            disabled={isReviewed || actionLoading !== null}
           >
             <XCircle size={15} /> رفض
           </button>
@@ -189,10 +215,11 @@ const PostDetail = () => {
             {post.media?.length > 0 ? (
               <>
                 <div className="pd-media-main">
-                  {post.media[activeMedia].type === 'video' ? (
+                  {isVideoMedia(post.media[activeMedia]) ? (
                     <video
                       key={post.media[activeMedia].url}
                       src={post.media[activeMedia].url}
+                      poster={post.media[activeMedia].thumbnail || undefined}
                       className="pd-media-video"
                       controls playsInline
                     />
@@ -209,7 +236,7 @@ const PostDetail = () => {
                     <p className="pd-overlay-meta"><ChefHat size={14} /> {post.user?.name ?? '—'}</p>
                   </div>
                   <span className="pd-media-type-badge">
-                    {post.media[activeMedia].type === 'video' ? '🎬 فيديو' : '🖼 صورة'}
+                    {isVideoMedia(post.media[activeMedia]) ? '🎬 فيديو' : '🖼 صورة'}
                   </span>
                 </div>
 
@@ -224,10 +251,8 @@ const PostDetail = () => {
                           className={`pd-thumb-btn${activeMedia === i ? ' pd-thumb-btn--active' : ''}`}
                           onClick={() => setActiveMedia(i)}
                         >
-                          {item.type === 'video' ? (
-                            <div className="pd-thumb-video">
-                              <span className="pd-thumb-play">▶</span>
-                            </div>
+                          {isVideoMedia(item) ? (
+                            <VideoThumb src={item.url} poster={item.thumbnail} playSize={18} />
                           ) : (
                             <img src={item.url} alt={`thumb-${i}`} className="pd-thumb-img" />
                           )}
@@ -261,11 +286,6 @@ const PostDetail = () => {
                 <div className="pd-info-icon"><ChefHat size={16} /></div>
                 <span className="pd-info-label">التصنيف</span>
                 <span className="pd-info-value">{post.category?.name ?? '—'}</span>
-              </div>
-              <div className="pd-info-cell">
-                <div className="pd-info-icon"><Star size={16} /></div>
-                <span className="pd-info-label">التقييم</span>
-                <span className="pd-info-value">{post.avg_rating ? `${post.avg_rating} / 5` : '—'}</span>
               </div>
             </div>
             {post.description && <p className="pd-description">{post.description}</p>}
@@ -378,13 +398,6 @@ const PostDetail = () => {
                   <MessageCircle size={17} className="pd-stat-icon pd-stat-icon--comment" />
                 </div>
               </div>
-              <div className="pd-stat-row">
-                <span className="pd-stat-val">{post.avg_rating ? `${post.avg_rating} / 5` : '—'}</span>
-                <div className="pd-stat-label-group">
-                  <span className="pd-stat-label">متوسط التقييم</span>
-                  <Star size={17} className="pd-stat-icon pd-stat-icon--star" />
-                </div>
-              </div>
             </div>
           </div>
 
@@ -407,17 +420,13 @@ const PostDetail = () => {
                 {comments.map(comment => (
                   <div key={comment.id} className="pd-comment">
                     <div className="pd-comment-header">
-                      <div className="pd-comment-user">
-                        <div className="pd-comment-avatar">
-                          {comment.user?.avatar
-                            ? <img src={comment.user.avatar} alt={comment.user.name} className="pd-comment-avatar-img" />
-                            : <span>{comment.user?.name?.charAt(0)?.toUpperCase() ?? '؟'}</span>
-                          }
-                        </div>
-                        <div>
-                          <p className="pd-comment-name">{comment.user?.name ?? '—'}</p>
-                          <p className="pd-comment-time">{comment.created_at}</p>
-                        </div>
+                      <div>
+                        <CommentAuthorButton
+                          user={comment.user}
+                          onClick={openUserActions}
+                          prefix="pd"
+                        />
+                        <p className="pd-comment-time">{comment.created_at}</p>
                       </div>
                       <button
                         className="pd-comment-delete"
@@ -469,6 +478,22 @@ const PostDetail = () => {
           </div>
         </div>
       )}
+
+      <CommentUserActionsModal
+        user={selectedUser}
+        isAdmin={canDeleteUser}
+        confirmDeleteUser={confirmDeleteUser}
+        setConfirmDeleteUser={setConfirmDeleteUser}
+        showBanModal={showBanModal}
+        setShowBanModal={setShowBanModal}
+        actionLoading={userActionLoading}
+        actionError={userActionError}
+        actionSuccess={userActionSuccess}
+        onClose={closeUserActions}
+        onBan={handleBanUser}
+        onUnban={handleUnbanUser}
+        onDelete={handleDeleteUser}
+      />
 
     </div>
   );

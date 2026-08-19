@@ -58,6 +58,7 @@
 }
 
 .audit-export-btn:hover { background: #FFF0EE; }
+.audit-export-btn:disabled { opacity: 0.7; cursor: not-allowed; }
 
 /* ======================== Stats Row ======================== */
 .audit-stats-row {
@@ -469,4 +470,135 @@
 @media (max-width: 900px) {
   .audit-stats-row { grid-template-columns: 1fr; }
   .audit-table th, .audit-table td { padding: 12px 16px; }
+  .audit-log-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .audit-export-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+.audit-cards-mobile {
+  display: none;
+}
+
+.audit-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #FFFFFF;
+  border: 1px solid #FFF0EE;
+  border-radius: 12px;
+  direction: rtl;
+}
+
+.audit-card-top {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.audit-card-details {
+  margin: 0;
+  font-size: 13px;
+  color: #59413D;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.audit-card-admin {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  direction: rtl;
+}
+
+.audit-card-date {
+  font-size: 12px;
+  color: #9E8C8A;
+  text-align: right;
+}
+
+@media (max-width: 767px) {
+  .audit-log-title {
+    font-size: 22px;
+  }
+
+  .audit-filters-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .audit-filter-group,
+  .audit-filter-group--search {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .audit-date-range {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .audit-reset-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .audit-table-desktop {
+    display: none;
+  }
+
+  .audit-cards-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .audit-pagination {
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .audit-log-title {
+    font-size: 20px;
+  }
+
+  .audit-stat-card {
+    padding: 14px;
+  }
+}
+
+.audit-error {
+  background: #FEF2F2;
+  color: #BA1A1A;
+  border: 1px solid #FECACA;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  text-align: right;
+}
+
+.audit-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+.audit-spin {
+  animation: audit-spin 0.8s linear infinite;
+  color: #9E2016;
+}
+
+@keyframes audit-spin {
+  to { transform: rotate(360deg); }
 }

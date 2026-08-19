@@ -245,6 +245,7 @@
   justify-content: space-between;
   padding: 6px 4px 0;
   flex-shrink: 0;
+  direction: ltr;
 }
 
 .chart-month-labels span {
@@ -378,6 +379,14 @@
   justify-content: center;
   flex-shrink: 0;
   color: #9E2016;
+}
+
+.pending-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
 }
 
 .pending-info { flex: 1; }
@@ -527,4 +536,97 @@
 @media (max-width: 900px) {
   .kpi-cards { grid-template-columns: repeat(2, 1fr); }
   .widgets-row { grid-template-columns: 1fr; }
+}
+
+/* ======================== الأكثر تفاعلاً (نفس الداشبورد) ======================== */
+.widget-period {
+  font-size: 12px;
+  color: #675C5A;
+  background: #FFF0EE;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: none;
+}
+
+.widget-title-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.analytics-liked-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.analytics-empty {
+  padding: 16px 8px;
+  font-size: 13px;
+  color: #59413D;
+  text-align: center;
+  opacity: 0.8;
+}
+
+.top-recipe-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 4px;
+  border-bottom: 1px solid #F3E8E6;
+}
+
+.top-recipe-item:last-child {
+  border-bottom: none;
+}
+
+.top-recipe-rank {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.top-recipe-rank--1 { background: #FEF3C7; color: #B45309; }
+.top-recipe-rank--2 { background: #F1F5F9; color: #475569; }
+.top-recipe-rank--3 { background: #FFF7ED; color: #C2410C; }
+.top-recipe-rank--default { background: #F9FAFB; color: #6B7280; }
+
+.top-recipe-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.top-recipe-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #261816;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.top-recipe-author {
+  font-size: 11px;
+  color: #59413D;
+  margin-top: 2px;
+}
+
+.top-recipe-views {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9E2016;
+  flex-shrink: 0;
 }

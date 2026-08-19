@@ -1,0 +1,173 @@
+/* src/components/BanUserModal.css */
+
+.ban-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(38, 24, 22, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+}
+
+.ban-modal {
+  background: #fff;
+  border-radius: 20px;
+  padding: 32px;
+  width: 520px;
+  max-width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  direction: rtl;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ban-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ban-title { font-size: 20px; font-weight: 700; color: #9E2016; margin: 0; }
+.ban-subtitle { font-size: 13px; color: #675C5A; margin: 4px 0 0; }
+
+.ban-close {
+  background: #FFF0EE;
+  border: none;
+  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #9E2016;
+  flex-shrink: 0;
+}
+
+.ban-close:hover { background: #FFE9E6; }
+
+.ban-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #FFF8F7;
+  border-radius: 10px;
+  border: 1px solid #E1BFB9;
+}
+
+.ban-user-icon {
+  width: 36px;
+  height: 36px;
+  background: #FFF0EE;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9E2016;
+  flex-shrink: 0;
+}
+
+.ban-user-name { font-size: 14px; font-weight: 700; color: #261816; margin: 0; }
+.ban-user-meta { font-size: 12px; color: #675C5A; margin: 0; }
+
+.ban-section { display: flex; flex-direction: column; gap: 10px; }
+.ban-label { font-size: 13px; font-weight: 600; color: #261816; text-align: right; }
+.ban-reasons { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+
+.ban-reason-btn {
+  padding: 7px 14px;
+  border-radius: 9999px;
+  border: 1.5px solid #E1BFB9;
+  background: #fff;
+  font-size: 13px;
+  color: #675C5A;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.ban-reason-btn:hover { border-color: #9E2016; color: #9E2016; background: #FFF0EE; }
+.ban-reason-btn--active {
+  border-color: #9E2016;
+  background: #FFE9E6;
+  color: #9E2016;
+  font-weight: 700;
+}
+
+.ban-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid #E1BFB9;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #261816;
+  direction: rtl;
+  font-family: inherit;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.ban-textarea:focus { border-color: #9E2016; }
+
+.ban-preview {
+  padding: 14px 16px;
+  background: #FFF0EE;
+  border: 1px solid rgba(225, 191, 185, 0.5);
+  border-radius: 10px;
+}
+
+.ban-preview-label { font-size: 11px; font-weight: 600; color: #9E2016; margin: 0 0 6px; text-align: right; }
+.ban-preview-text { font-size: 13px; color: #261816; margin: 0; line-height: 1.6; text-align: right; white-space: pre-line; }
+
+.ban-actions { display: flex; gap: 10px; }
+
+.ban-cancel {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #F3F4F6;
+  color: #675C5A;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.ban-confirm {
+  flex: 2;
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: none;
+  background: #9E2016;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+}
+
+.ban-confirm:hover:not(:disabled) { background: #7a1810; }
+.ban-confirm:disabled,
+.ban-cancel:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.ban-spin { animation: ban-spin 0.8s linear infinite; }
+@keyframes ban-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 480px) {
+  .ban-modal { padding: 20px; gap: 14px; }
+  .ban-actions { flex-direction: column; }
+  .ban-cancel,
+  .ban-confirm { flex: unset; justify-content: center; }
+}

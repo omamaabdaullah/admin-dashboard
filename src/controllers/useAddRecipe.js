@@ -2,7 +2,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createRecipe } from '../models/recipesModel';
-import { fetchCuisines, fetchCategoriesByCuisine } from '../models/categoriesModel';
+import {
+  fetchCuisines,
+  fetchCategoriesByCuisine,
+  createCuisine,
+  createCategory,
+} from '../models/categoriesModel';
+import { captureVideoFrame } from '../utils/videoThumbnail';
 
 /* ── ثوابت مشتركة (تُصدَّر للـ View) ── */
 export const DIFFICULTY_OPTIONS = [
@@ -12,6 +18,17 @@ export const DIFFICULTY_OPTIONS = [
 ];
 
 const DIFFICULTY_MAP = { سهل: 'easy', متوسط: 'medium', صعب: 'hard' };
+
+const quickAddErrorMessage = (err) => {
+  const data = err?.response?.data ?? {};
+  const nameErr = data.errors?.name?.[0];
+  if (nameErr && /taken|unique/i.test(nameErr)) return 'هذا الاسم موجود مسبقاً';
+  if (nameErr) return nameErr;
+  if (typeof data.message === 'string' && /taken|unique/i.test(data.message)) {
+    return 'هذا الاسم موجود مسبقاً';
+  }
+  return data.message || 'تعذّر الحفظ، حاول مرة أخرى';
+};
 
 /* ════════════════════════════════════════
    useAddRecipe  — كل الـ state والـ logic
@@ -34,6 +51,9 @@ export const useAddRecipe = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [cuisinesLoading,  setCuisinesLoading]  = useState(true);
   const [catsLoading,      setCatsLoading]      = useState(false);
+  const [quickAdd,         setQuickAdd]         = useState(null);
+  const [quickAddSaving,   setQuickAddSaving]   = useState(false);
+  const [quickAddError,    setQuickAddError]    = useState('');
 
   /* ── الوسائط ── */
   const [mediaFiles,    setMediaFiles]    = useState([]);
@@ -99,16 +119,20 @@ export const useAddRecipe = () => {
   }, [selectedCuisine]);
 
   /* ══ دوال الوسائط ══ */
-  const addMediaFiles = useCallback((files) => {
+  const addMediaFiles = useCallback(async (files) => {
     const arr = Array.from(files);
+    if (!arr.length) return;
+
     setMediaFiles((prev) => [...prev, ...arr]);
-    arr.forEach((file) => {
+
+    const items = await Promise.all(arr.map(async (file) => {
       const url = URL.createObjectURL(file);
-      setMediaPreviews((prev) => [
-        ...prev,
-        { url, type: file.type.startsWith('video') ? 'video' : 'image' },
-      ]);
-    });
+      const isVideo = file.type.startsWith('video');
+      const poster = isVideo ? await captureVideoFrame(url) : null;
+      return { url, type: isVideo ? 'video' : 'image', poster };
+    }));
+
+    setMediaPreviews((prev) => [...prev, ...items]);
   }, []);
 
   const removeMedia = useCallback((idx) => {
@@ -142,6 +166,48 @@ export const useAddRecipe = () => {
   /* ══ مسح خطأ حقل بعينه ══ */
   const clearErr = useCallback((field) =>
     setErrors((prev) => { const n = { ...prev }; delete n[field]; return n; }), []);
+
+  const openQuickAdd = useCallback((kind) => {
+    setQuickAddError('');
+    setQuickAdd(kind);
+  }, []);
+
+  const closeQuickAdd = useCallback(() => {
+    if (quickAddSaving) return;
+    setQuickAdd(null);
+    setQuickAddError('');
+  }, [quickAddSaving]);
+
+  const handleQuickAddSave = useCallback(async ({ name, image }) => {
+    const trimmed = name?.trim();
+    if (!trimmed) {
+      setQuickAddError('الاسم مطلوب');
+      return;
+    }
+
+    setQuickAddSaving(true);
+    setQuickAddError('');
+    try {
+      if (quickAdd === 'cuisine') {
+        const created = await createCuisine(trimmed, image);
+        setCuisines((prev) => [...prev, created]);
+        setSelectedCuisine(created);
+      } else if (!selectedCuisine?.id) {
+        setQuickAddError('اختر مطبخاً أولاً لإضافة تصنيف بداخله');
+        return;
+      } else {
+        const created = await createCategory(selectedCuisine.id, trimmed, image);
+        setCategories((prev) => [...prev, created]);
+        setSelectedCategory(created);
+      }
+      clearErr('category');
+      setQuickAdd(null);
+    } catch (err) {
+      setQuickAddError(quickAddErrorMessage(err));
+    } finally {
+      setQuickAddSaving(false);
+    }
+  }, [quickAdd, selectedCuisine, clearErr]);
 
   /* ══ التحقق من الحقول ══ */
   const validate = useCallback(() => {
@@ -219,6 +285,13 @@ export const useAddRecipe = () => {
     selectedCategory, setSelectedCategory,
     cuisinesLoading,
     catsLoading,
+    quickAdd,
+    quickAddSaving,
+    quickAddError,
+    setQuickAddError,
+    openQuickAdd,
+    closeQuickAdd,
+    handleQuickAddSave,
 
     /* الوسائط */
     mediaFiles,

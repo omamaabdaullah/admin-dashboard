@@ -4,7 +4,6 @@ import { Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { forgotPassword, resetPassword } from '../../models/authModel';
 import './VerifyOtp.css';
-import './NewPassword.css';
 
 const OTP_LENGTH = 6;
 const RESEND_SECONDS = 30;

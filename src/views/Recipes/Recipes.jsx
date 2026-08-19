@@ -1,5 +1,6 @@
 // src/views/Recipes/Recipes.jsx
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Search, Eye, Trash2, Plus, ChefHat,
   Filter, Loader2, ChevronRight, ChevronLeft,
@@ -8,7 +9,9 @@ import {
 import {
   useRecipes,
   DIFFICULTY_OPTIONS,
+  PREP_TIME_OPTIONS,
 } from '../../controllers/useRecipes';
+import VideoThumb from '../../components/VideoThumb';
 import './Recipes.css';
 
 const ActionBtn = ({ icon: Icon, color, title, onClick, disabled }) => (
@@ -27,15 +30,7 @@ const RecipeThumb = ({ recipe }) => (
     {recipe.image
       ? <img src={recipe.image} alt={recipe.name} className="recipe-thumb-img" />
       : recipe.videoThumb
-        ? (
-          <video
-            src={recipe.videoThumb}
-            className="recipe-thumb-img"
-            preload="metadata"
-            muted
-            playsInline
-          />
-        )
+        ? <VideoThumb src={recipe.videoThumb} poster={recipe.videoPoster} alt={recipe.name} playSize={18} />
         : <ChefHat size={18} />
     }
   </div>
@@ -43,25 +38,50 @@ const RecipeThumb = ({ recipe }) => (
 
 const Recipes = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialSearch = searchParams.get('search') ?? '';
+  const initialDifficulty = searchParams.get('difficulty') ?? '';
+  const initialCategory = searchParams.get('category') ?? '';
+  const initialPrepTime = searchParams.get('prep_time') ?? '';
+  const initialPage = Math.max(1, Number(searchParams.get('page') || 1));
 
   const {
     recipes,
     meta,
     total,
+    categories,
+    categoriesLoading,
     loading,
     error,
     search,
     difficulty,
+    category,
+    prepTime,
     page,
     actionLoading,
     confirmDelete,
     setSearch,
     setDifficulty,
+    setCategory,
+    setPrepTime,
     setConfirmDelete,
+    getCategoryLabel,
     handlePageChange,
     handleRetry,
     handleDelete,
-  } = useRecipes();
+  } = useRecipes({ initialSearch, initialDifficulty, initialCategory, initialPrepTime, initialPage });
+
+  useEffect(() => {
+    const next = new URLSearchParams();
+    if (search.trim()) next.set('search', search.trim());
+    if (difficulty) next.set('difficulty', difficulty);
+    if (category) next.set('category', category);
+    if (prepTime) next.set('prep_time', prepTime);
+    if (page > 1) next.set('page', String(page));
+    setSearchParams(next, { replace: true });
+  }, [search, difficulty, category, prepTime, page, setSearchParams]);
+
+  const isSearching = !!search.trim();
 
   const isWorking = actionLoading !== null;
   const lastPage = meta?.last_page ?? 1;
@@ -91,12 +111,12 @@ const Recipes = () => {
 
       <div className="recipes-controls">
         <div className="recipes-filter-group">
-          <div className="recipes-filter-select">
+          <div className={`recipes-filter-select${isSearching ? ' recipes-filter-select--disabled' : ''}`}>
             <Filter size={15} />
             <select
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value)}
-              disabled={!!search.trim()}
+              disabled={isSearching}
             >
               {DIFFICULTY_OPTIONS.map((d) => (
                 <option key={d.value || 'all'} value={d.value}>{d.label}</option>
@@ -104,6 +124,43 @@ const Recipes = () => {
             </select>
             <span className="recipes-filter-label">
               الصعوبة: {DIFFICULTY_OPTIONS.find((d) => d.value === difficulty)?.label || 'الكل'}
+            </span>
+          </div>
+
+          <div className={`recipes-filter-select${isSearching ? ' recipes-filter-select--disabled' : ''}`}>
+            <Filter size={15} />
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              disabled={isSearching || categoriesLoading}
+            >
+              <option value="">الكل</option>
+              {categories.map((cat) => {
+                const cuisineName = cat.cuisine?.name;
+                const label = cuisineName ? `${cuisineName} · ${cat.name}` : cat.name;
+                return (
+                  <option key={cat.id} value={String(cat.id)}>{label}</option>
+                );
+              })}
+            </select>
+            <span className="recipes-filter-label">
+              التصنيف: {categoriesLoading ? 'تحميل...' : getCategoryLabel(category)}
+            </span>
+          </div>
+
+          <div className={`recipes-filter-select${isSearching ? ' recipes-filter-select--disabled' : ''}`}>
+            <Filter size={15} />
+            <select
+              value={prepTime}
+              onChange={(e) => setPrepTime(e.target.value)}
+              disabled={isSearching}
+            >
+              {PREP_TIME_OPTIONS.map((opt) => (
+                <option key={opt.value || 'all'} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            <span className="recipes-filter-label">
+              التحضير: {PREP_TIME_OPTIONS.find((opt) => opt.value === prepTime)?.label || 'الكل'}
             </span>
           </div>
         </div>
@@ -182,7 +239,7 @@ const Recipes = () => {
                           icon={Eye}
                           color="gray"
                           title="عرض التفاصيل"
-                          onClick={() => navigate('/recipes/detail', { state: { recipe } })}
+                        onClick={() => navigate(`/recipes/${recipe.id}`)}
                         />
                       </div>
                     </td>
@@ -215,7 +272,7 @@ const Recipes = () => {
                       icon={Eye}
                       color="gray"
                       title="عرض التفاصيل"
-                      onClick={() => navigate('/recipes/detail', { state: { recipe } })}
+                     onClick={() => navigate(`/recipes/${recipe.id}`)}
                     />
                     <ActionBtn
                       icon={Trash2}

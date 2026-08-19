@@ -1,144 +1,24 @@
 // src/views/Analytics/Analytics.jsx
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Users, UtensilsCrossed, Image, Heart,
   ArrowUpRight, ArrowDownRight,
-  Star, Eye, ChefHat,
+  ChefHat,
 } from 'lucide-react';
+import { useAnalytics } from '../../controllers/useAnalytics';
+import { PERIOD_OPTIONS } from '../../models/analyticsModel';
 import './Analytics.css';
-
-// ─── بيانات ثابتة (تُستبدل بـ API لاحقاً) ───
 
 const KPI_ICONS = [Users, UtensilsCrossed, Image, Heart];
 
-const PERIOD_DATA = {
-  يومي: {
-    kpi: [
-      { label: 'إجمالي المستخدمين',  value: '128',    change: 2  },
-      { label: 'إجمالي الوصفات',     value: '14',     change: 5  },
-      { label: 'منشورات المجتمع',    value: '37',     change: -1 },
-      { label: 'إجمالي التفاعلات',   value: '1,240',  change: 3  },
-    ],
-    labels: ['12ص', '3ص', '6ص', '9ص', '12م', '3م', '6م', '9م'],
-    users:   [20,  8,  5, 30, 60, 90, 75, 40],
-    recipes: [2,   1,  0,  3,  5,  8,  6,  4],
-    donut: [
-      { label: 'حلويات',        pct: 30, color: '#C0392B' },
-      { label: 'أطباق رئيسية', pct: 28, color: '#EA580C' },
-      { label: 'مقبلات',        pct: 18, color: '#F59E0B' },
-      { label: 'صحي',           pct: 12, color: '#16A34A' },
-      { label: 'شرقي',          pct:  8, color: '#2563EB' },
-      { label: 'غربي',          pct:  4, color: '#7C3AED' },
-    ],
-    engagement: [
-      { label: 'الإعجابات', value: '620',  color: '#9E2016', bars: [0.5, 0.8, 0.6, 1, 0.7, 0.4] },
-      { label: 'التعليقات', value: '184',  color: '#3B82F6', bars: [0.3, 0.6, 0.4, 0.9, 0.5, 0.2] },
-    ],
-    topRecipes: [
-      { id: 1, name: 'كيكة الشوكولاتة الذاتية', views: '320', rating: 4.9 },
-      { id: 2, name: 'شاورما دجاج منزلية',       views: '210', rating: 4.7 },
-      { id: 3, name: 'سلطة سيزر كلاسيك',         views: '180', rating: 4.6 },
-    ],
-    pending: { posts: 8, photos: 3, recipes: 5 },
-  },
-  أسبوعي: {
-    kpi: [
-      { label: 'إجمالي المستخدمين',  value: '842',    change: 6  },
-      { label: 'إجمالي الوصفات',     value: '73',     change: 9  },
-      { label: 'منشورات المجتمع',    value: '215',    change: 4  },
-      { label: 'إجمالي التفاعلات',   value: '9,180',  change: -3 },
-    ],
-    labels: ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'],
-    users:   [95, 120, 140, 110, 160, 130, 87],
-    recipes: [8,   12,  10,   9,  14,  11,  9],
-    donut: [
-      { label: 'حلويات',        pct: 32, color: '#C0392B' },
-      { label: 'أطباق رئيسية', pct: 26, color: '#EA580C' },
-      { label: 'مقبلات',        pct: 16, color: '#F59E0B' },
-      { label: 'صحي',           pct: 12, color: '#16A34A' },
-      { label: 'شرقي',          pct:  9, color: '#2563EB' },
-      { label: 'غربي',          pct:  5, color: '#7C3AED' },
-    ],
-    engagement: [
-      { label: 'الإعجابات', value: '4.8K', color: '#9E2016', bars: [0.7, 0.5, 0.9, 0.6, 1, 0.8] },
-      { label: 'التعليقات', value: '1.2K', color: '#3B82F6', bars: [0.4, 0.7, 0.5, 0.3, 0.8, 0.6] },
-    ],
-    topRecipes: [
-      { id: 1, name: 'منسف أردني بالجميد',         views: '2.1K', rating: 4.8 },
-      { id: 2, name: 'الكبسة السعودية التقليدية',   views: '1.8K', rating: 4.9 },
-      { id: 3, name: 'كنافة نابلسية بالجبن',        views: '1.5K', rating: 4.7 },
-    ],
-    pending: { posts: 23, photos: 9, recipes: 14 },
-  },
-  شهري: {
-    kpi: [
-      { label: 'إجمالي المستخدمين',  value: '3,420',  change: 11 },
-      { label: 'إجمالي الوصفات',     value: '298',    change: 8  },
-      { label: 'منشورات المجتمع',    value: '940',    change: 6  },
-      { label: 'إجمالي التفاعلات',   value: '38,600', change: -1 },
-    ],
-    labels: ['الأسبوع 1', 'الأسبوع 2', 'الأسبوع 3', 'الأسبوع 4'],
-    users:   [780, 920, 850, 1100],
-    recipes: [62,  78,  70,   88],
-    donut: [
-      { label: 'حلويات',        pct: 33, color: '#C0392B' },
-      { label: 'أطباق رئيسية', pct: 27, color: '#EA580C' },
-      { label: 'مقبلات',        pct: 16, color: '#F59E0B' },
-      { label: 'صحي',           pct: 11, color: '#16A34A' },
-      { label: 'شرقي',          pct:  9, color: '#2563EB' },
-      { label: 'غربي',          pct:  4, color: '#7C3AED' },
-    ],
-    engagement: [
-      { label: 'الإعجابات', value: '19.4K', color: '#9E2016', bars: [0.6, 0.9, 0.7, 1] },
-      { label: 'التعليقات', value: '5.1K',  color: '#3B82F6', bars: [0.4, 0.7, 0.5, 0.8] },
-    ],
-    topRecipes: [
-      { id: 1, name: 'حلويات أم علي بالقشطة',       views: '6.2K', rating: 4.7 },
-      { id: 2, name: 'الكبسة السعودية التقليدية',   views: '5.9K', rating: 4.9 },
-      { id: 3, name: 'شاورما دجاج منزلية',           views: '4.8K', rating: 4.8 },
-    ],
-    pending: { posts: 38, photos: 12, recipes: 26 },
-  },
-  سنوي: {
-    kpi: [
-      { label: 'إجمالي المستخدمين',  value: '12,540', change: 8  },
-      { label: 'إجمالي الوصفات',     value: '3,284',  change: 12 },
-      { label: 'منشورات المجتمع',    value: '5,920',  change: 3  },
-      { label: 'إجمالي التفاعلات',   value: '89,320', change: -2 },
-    ],
-    labels: ['يناير', 'مارس', 'مايو', 'يوليو', 'سبتمبر', 'نوفمبر'],
-    users:   [1200, 2100, 2800, 5200, 7200, 12500],
-    recipes: [400,  700,  1100, 1700, 2400,  3284],
-    donut: [
-      { label: 'حلويات',        pct: 35, color: '#C0392B' },
-      { label: 'أطباق رئيسية', pct: 25, color: '#EA580C' },
-      { label: 'مقبلات',        pct: 15, color: '#F59E0B' },
-      { label: 'صحي',           pct: 10, color: '#16A34A' },
-      { label: 'شرقي',          pct: 10, color: '#2563EB' },
-      { label: 'غربي',          pct:  5, color: '#7C3AED' },
-    ],
-    engagement: [
-      { label: 'الإعجابات', value: '45.2K', color: '#9E2016', bars: [0.9, 0.7, 1, 0.8, 0.6, 0.4] },
-      { label: 'التعليقات', value: '12.8K', color: '#3B82F6', bars: [0.8, 0.6, 0.3, 0.4, 0.2, 0.5] },
-    ],
-    topRecipes: [
-      { id: 1, name: 'الكبسة السعودية التقليدية', views: '12.5K', rating: 4.9 },
-      { id: 2, name: 'منسف أردني بالجميد',         views: '9.2K',  rating: 4.8 },
-      { id: 3, name: 'حلويات أم علي بالقشطة',       views: '8.8K',  rating: 4.7 },
-    ],
-    pending: { posts: 47, photos: 15, recipes: 32 },
-  },
-};
-
-const PERIOD_OPTIONS = ['يومي', 'أسبوعي', 'شهري', 'سنوي'];
-
-// ─── بناء مسار SVG للخط ───
 const buildSvgPath = (data, W, H, padX = 10, padY = 16) => {
+  if (!data.length) data = [0];
   const maxVal = Math.max(...data, 1);
   const usableW = W - padX * 2;
   const usableH = H - padY * 2;
   const pts = data.map((d, i) => [
-    padX + (i / (data.length - 1)) * usableW,
+    padX + (i / Math.max(data.length - 1, 1)) * usableW,
     padY + usableH - (d / maxVal) * usableH,
   ]);
   let line = `M${pts[0][0]},${pts[0][1]}`;
@@ -151,10 +31,10 @@ const buildSvgPath = (data, W, H, padX = 10, padY = 16) => {
   return { line, area, pts };
 };
 
-// ─── بناء مسارات Donut ───
 const buildDonutPaths = (segments, cx, cy, r, thickness) => {
   let cumulative = 0;
-  return segments.map(seg => {
+  return segments.map((seg) => {
+    const pct = Math.max(seg.pct, 0.001);
     const startAngle = (cumulative / 100) * 2 * Math.PI - Math.PI / 2;
     cumulative += seg.pct;
     const endAngle = (cumulative / 100) * 2 * Math.PI - Math.PI / 2;
@@ -162,7 +42,7 @@ const buildDonutPaths = (segments, cx, cy, r, thickness) => {
     const y1 = cy + r * Math.sin(startAngle);
     const x2 = cx + r * Math.cos(endAngle);
     const y2 = cy + r * Math.sin(endAngle);
-    const largeArc = seg.pct > 50 ? 1 : 0;
+    const largeArc = pct > 50 ? 1 : 0;
     const innerR = r - thickness;
     const ix1 = cx + innerR * Math.cos(endAngle);
     const iy1 = cy + innerR * Math.sin(endAngle);
@@ -176,38 +56,62 @@ const buildDonutPaths = (segments, cx, cy, r, thickness) => {
 };
 
 const getRankClass = (i) => {
-  if (i === 0) return 'top-rank--1';
-  if (i === 1) return 'top-rank--2';
-  if (i === 2) return 'top-rank--3';
-  return 'top-rank--def';
+  if (i === 0) return 'top-recipe-rank--1';
+  if (i === 1) return 'top-recipe-rank--2';
+  if (i === 2) return 'top-recipe-rank--3';
+  return 'top-recipe-rank--default';
 };
 
-// ═══════════════════════════════════════════════════
 const Analytics = () => {
-  const [activePeriod, setActivePeriod] = useState('سنوي');
+  const navigate = useNavigate();
+  const [activePeriod, setActivePeriod] = useState('أسبوعي');
+  const { data, loading, error, reload } = useAnalytics(activePeriod);
 
-  const data = PERIOD_DATA[activePeriod];
+  if (loading) {
+    return (
+      <div className="analytics">
+        <p>جاري التحميل...</p>
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="analytics">
+        <p>{error || 'لا توجد بيانات'}</p>
+        <button type="button" onClick={reload}>إعادة المحاولة</button>
+      </div>
+    );
+  }
 
   const SVG_W = 500;
   const SVG_H = 220;
-  const usersChart   = buildSvgPath(data.users,   SVG_W, SVG_H);
-  const recipesChart = buildSvgPath(data.recipes, SVG_W, SVG_H);
+  const usersChart = buildSvgPath(data.users.length ? data.users : [0], SVG_W, SVG_H);
+  const postsChart = buildSvgPath(data.posts.length ? data.posts : [0], SVG_W, SVG_H);
 
   const DONUT_CX = 80;
   const DONUT_CY = 80;
-  const DONUT_R  = 70;
-  const DONUT_T  = 22;
-  const donutPaths = buildDonutPaths(data.donut, DONUT_CX, DONUT_CY, DONUT_R, DONUT_T);
+  const DONUT_R = 70;
+  const DONUT_T = 22;
+  const donutPaths = buildDonutPaths(
+    data.donut.length ? data.donut : [{ label: '—', pct: 100, color: '#E5E7EB' }],
+    DONUT_CX,
+    DONUT_CY,
+    DONUT_R,
+    DONUT_T,
+  );
+
+  const liked = data.mostLikedRecipes ?? [];
 
   return (
     <div className="analytics">
 
-      {/* ═══ Header ═══ */}
       <div className="analytics-header">
         <div className="filter-pills">
-          {PERIOD_OPTIONS.map(p => (
+          {PERIOD_OPTIONS.map((p) => (
             <button
               key={p}
+              type="button"
               className={`filter-pill${activePeriod === p ? ' active' : ''}`}
               onClick={() => setActivePeriod(p)}
             >
@@ -221,19 +125,18 @@ const Analytics = () => {
         </div>
       </div>
 
-      {/* ═══ KPI Cards ═══ */}
       <div className="kpi-cards">
         {data.kpi.map(({ label, value, change }, idx) => {
           const Icon = KPI_ICONS[idx];
           return (
             <div key={label} className="kpi-card">
               <div className="kpi-card-top">
-                <span className={`kpi-change kpi-change--${change >= 0 ? 'up' : 'down'}`}>
-                  {change >= 0
-                    ? <ArrowUpRight size={13} />
-                    : <ArrowDownRight size={13} />}
-                  {Math.abs(change)}%
-                </span>
+                {change != null && (
+                  <span className={`kpi-change kpi-change--${change >= 0 ? 'up' : 'down'}`}>
+                    {change >= 0 ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
+                    {Math.abs(change)}%
+                  </span>
+                )}
                 <div className="kpi-icon"><Icon size={22} /></div>
               </div>
               <div className="kpi-value">{value}</div>
@@ -243,23 +146,21 @@ const Analytics = () => {
         })}
       </div>
 
-      {/* ═══ Charts Row ═══ */}
       <div className="charts-row">
 
-        {/* Line Chart */}
         <div className="widget-card">
           <div className="widget-header">
             <div className="line-chart-legend">
               <div className="legend-item">
                 <span className="legend-dashed" />
-                الوصفات
+                المنشورات
               </div>
               <div className="legend-item">
                 <span className="legend-dot" style={{ background: '#7C0202' }} />
                 المستخدمون
               </div>
             </div>
-            <h2 className="widget-title">نمو المستخدمين والوصفات</h2>
+            <h2 className="widget-title">نمو المستخدمين والمنشورات</h2>
           </div>
           <div className="line-chart-container">
             <svg
@@ -270,56 +171,56 @@ const Analytics = () => {
             >
               <defs>
                 <linearGradient id="usersGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%"   stopColor="#9E2016" stopOpacity="0.15" />
+                  <stop offset="0%" stopColor="#9E2016" stopOpacity="0.15" />
                   <stop offset="100%" stopColor="#9E2016" stopOpacity="0" />
                 </linearGradient>
               </defs>
 
-              {/* Grid lines */}
-              {[0.25, 0.5, 0.75].map(f => (
+              {[0.25, 0.5, 0.75].map((f) => (
                 <line
                   key={f}
-                  x1={0} y1={SVG_H * f}
-                  x2={SVG_W} y2={SVG_H * f}
-                  stroke="#E1BFB9" strokeWidth="0.5" strokeOpacity="0.5"
+                  x1={0}
+                  y1={SVG_H * f}
+                  x2={SVG_W}
+                  y2={SVG_H * f}
+                  stroke="#E1BFB9"
+                  strokeWidth="0.5"
+                  strokeOpacity="0.5"
                 />
               ))}
 
-              {/* Users area + line */}
               <path d={usersChart.area} fill="url(#usersGrad)" />
               <path d={usersChart.line} fill="none" stroke="#9E2016" strokeWidth="2.5" strokeLinecap="round" />
               {usersChart.pts.map(([x, y], i) => (
                 <g key={i}>
-                  <circle cx={x} cy={y} r={5}  fill="#9E2016" />
-                  <circle cx={x} cy={y} r={8}  fill="#9E2016" fillOpacity="0.12" />
+                  <circle cx={x} cy={y} r={5} fill="#9E2016" />
+                  <circle cx={x} cy={y} r={8} fill="#9E2016" fillOpacity="0.12" />
                 </g>
               ))}
 
-              {/* Recipes dashed line */}
               <path
-                d={recipesChart.line}
+                d={postsChart.line}
                 fill="none"
                 stroke="#2563EB"
                 strokeWidth="2"
                 strokeDasharray="6 4"
                 strokeLinecap="round"
               />
-              {recipesChart.pts.map(([x, y], i) => (
+              {postsChart.pts.map(([x, y], i) => (
                 <circle key={i} cx={x} cy={y} r={4} fill="#2563EB" />
               ))}
             </svg>
 
             <div className="chart-month-labels">
-              {data.labels.map(m => <span key={m}>{m}</span>)}
+              {data.labels.map((m, i) => <span key={`${m}-${i}`}>{m}</span>)}
             </div>
           </div>
         </div>
 
-        {/* Donut Chart */}
         <div className="widget-card">
           <div className="widget-header">
             <div />
-            <h2 className="widget-title">توزيع الوصفات حسب التصنيف</h2>
+            <h2 className="widget-title">توزيع الوصفات حسب المطبخ</h2>
           </div>
           <div className="donut-container">
             <div className="donut-svg-wrap">
@@ -329,13 +230,15 @@ const Analytics = () => {
                 ))}
               </svg>
               <div className="donut-center-label">
-                <span className="donut-center-value">3,284</span>
+                <span className="donut-center-value">
+                  {Number(data.totalRecipes).toLocaleString('en-US')}
+                </span>
                 <span className="donut-center-sub">إجمالي الوصفات</span>
               </div>
             </div>
             <div className="donut-legend">
-              {data.donut.map(seg => (
-                <div key={seg.label} className="donut-legend-item">
+              {data.donut.map((seg, i) => (
+                <div key={`${seg.label}-${i}`} className="donut-legend-item">
                   <span className="donut-dot" style={{ background: seg.color }} />
                   {seg.label} ({seg.pct}%)
                 </div>
@@ -345,10 +248,8 @@ const Analytics = () => {
         </div>
       </div>
 
-      {/* ═══ Widgets Row ═══ */}
       <div className="widgets-row">
 
-        {/* Pending Review */}
         <div className="widget-card">
           <div className="widget-header">
             <span className="pending-badge">{data.pending.posts} منشور</span>
@@ -356,27 +257,48 @@ const Analytics = () => {
           </div>
           <div className="pending-split">
             <div className="pending-mini">
+              <div className="pending-mini-label">منشورات</div>
+              <div className="pending-mini-val">{data.pending.posts}</div>
+            </div>
+            <div className="pending-mini">
               <div className="pending-mini-label">صور</div>
               <div className="pending-mini-val">{data.pending.photos}</div>
             </div>
-            <div className="pending-mini">
-              <div className="pending-mini-label">وصفات</div>
-              <div className="pending-mini-val">{data.pending.recipes}</div>
-            </div>
           </div>
-          <div className="pending-item">
-            <div className="pending-info">
-              <div className="pending-name">{data.topRecipes[0].name}</div>
-              <div className="pending-time">بانتظار المراجعة</div>
+          {data.pending.latest ? (
+            <div className="pending-item">
+              <div className="pending-info">
+                <div className="pending-name">{data.pending.latest.name}</div>
+                <div className="pending-time">
+                  {data.pending.latest.chef
+                    ? `${data.pending.latest.chef} · بانتظار المراجعة`
+                    : 'بانتظار المراجعة'}
+                </div>
+              </div>
+              <div className="pending-thumb">
+                {data.pending.latest.cover ? (
+                  <img src={data.pending.latest.cover} alt="" />
+                ) : (
+                  <ChefHat size={18} />
+                )}
+              </div>
             </div>
-            <div className="pending-thumb">
-              <ChefHat size={18} />
+          ) : (
+            <div className="pending-item">
+              <div className="pending-info">
+                <div className="pending-name">لا توجد منشورات معلّقة</div>
+              </div>
             </div>
-          </div>
-          <button className="pending-review-btn">مراجعة الكل</button>
+          )}
+          <button
+            type="button"
+            className="pending-review-btn"
+            onClick={() => navigate('/posts')}
+          >
+            مراجعة الكل
+          </button>
         </div>
 
-        {/* Engagement */}
         <div className="widget-card">
           <div className="widget-header">
             <div />
@@ -390,7 +312,7 @@ const Analytics = () => {
                   <span className="engagement-label">{label}</span>
                 </div>
                 <div className="sparkbar">
-                  {bars.map((h, i) => (
+                  {(bars.length ? bars : [0]).map((h, i) => (
                     <div
                       key={i}
                       className="sparkbar-bar"
@@ -407,29 +329,35 @@ const Analytics = () => {
           </div>
         </div>
 
-        {/* Top Recipes */}
+        {/* نفس تصميم الداشبورد */}
         <div className="widget-card">
           <div className="widget-header">
-            <div />
-            <h2 className="widget-title">أكثر الوصفات مشاهدة</h2>
-          </div>
-          <div className="top-list">
-            {data.topRecipes.map((r, i) => (
-              <div key={r.id} className="top-item">
-                <div className="top-info">
-                  <div className="top-name">{r.name}</div>
-                  <div className="top-meta">
-                    <Star size={10} className="top-rating" fill="#FB923C" color="#FB923C" />
-                    <span className="top-rating">{r.rating}</span>
-                    <span>·</span>
-                    <Eye size={10} />
-                    <span>{r.views} مشاهدة</span>
-                  </div>
-                </div>
-                <div className={`top-rank ${getRankClass(i)}`}>{i + 1}</div>
+          
+            <div className="widget-title analytics-liked-title">
+              <div className="widget-title-icon" style={{ background: '#FEF3C7', color: '#B45309' }}>
+                <Heart size={16} />
               </div>
-            ))}
+              الأكثر تفاعلاً
+            </div>
           </div>
+
+          {liked.length === 0 ? (
+            <p className="analytics-empty">لا توجد وصفات بإعجابات بعد</p>
+          ) : (
+            liked.map((r, i) => (
+              <div key={r.id} className="top-recipe-item">
+                <div className={`top-recipe-rank ${getRankClass(i)}`}>{i + 1}</div>
+                <div className="top-recipe-info">
+                  <div className="top-recipe-name">{r.name}</div>
+                  <div className="top-recipe-author">{r.author}</div>
+                </div>
+                <div className="top-recipe-views">
+                  <Heart size={14} />
+                  {Number(r.likes).toLocaleString('en-US')}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 

@@ -26,126 +26,87 @@ export const REJECT_REASONS = [
   'سبب آخر',
 ];
 
-export const usePosts = () => {
+export const usePosts = ({
+  initialSearch = '',
+  initialTab = 'all',
+} = {}) => {
   const [posts,         setPosts]         = useState([]);
-  const [hasMore,       setHasMore]       = useState(false);
+  const [meta,          setMeta]          = useState(null);
   const [loading,       setLoading]       = useState(true);
-  const [loadingMore,   setLoadingMore]   = useState(false);
   const [error,         setError]         = useState('');
-  const [search,        setSearch]        = useState('');
-  const [activeTab,     setActiveTab]     = useState('all');
+  const [search,        setSearch]        = useState(initialSearch);
+  const [activeTab,     setActiveTab]     = useState(initialTab);
+  const [page,          setPage]          = useState(1);
   const [actionLoading, setActionLoading] = useState(null);
   const [rejectTarget,  setRejectTarget]  = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
 
-  const searchRef      = useRef('');
-  const tabRef         = useRef('all');
-  const currentPageRef = useRef(0);
-  const lastPageRef    = useRef(1);
-  const fetchingRef    = useRef(false);
-  const sentinelRef    = useRef(null);
-  const scrollRootRef  = useRef(null);
+  const searchRef    = useRef(initialSearch);
+  const tabRef       = useRef(initialTab);
+  const fetchingRef  = useRef(false);
+  const firstLoadRef = useRef(true);
 
   useEffect(() => { searchRef.current = search; },    [search]);
   useEffect(() => { tabRef.current    = activeTab; }, [activeTab]);
 
-  /* ── جلب صفحة ── */
-  const fetchPage = useCallback((page, reset) => {
+  const loadPosts = useCallback(async (pageNum = 1) => {
     if (fetchingRef.current) return;
     fetchingRef.current = true;
-
-    if (reset) {
-      setLoading(true);
-      setPosts([]);
-      setHasMore(false);
-    } else {
-      setLoadingMore(true);
-    }
+    setLoading(true);
     setError('');
-
-    fetchPosts({
-      page,
-      perPage: PER_PAGE,
-      search:  searchRef.current,
-      status:  tabRef.current,
-    })
-      .then(({ data, meta }) => {
-        const curPage = meta?.current_page ?? page;
-        const last    = meta?.last_page    ?? 1;
-
-        currentPageRef.current = curPage;
-        lastPageRef.current    = last;
-
-        setPosts(prev => reset ? data : [...prev, ...data]);
-        setHasMore(curPage < last);
-      })
-      .catch(() => setError('فشل تحميل البيانات، تحقق من الاتصال بالخادم'))
-      .finally(() => {
-        setLoading(false);
-        setLoadingMore(false);
-        fetchingRef.current = false;
+    try {
+      const { data, meta: m } = await fetchPosts({
+        page:    pageNum,
+        perPage: PER_PAGE,
+        search:  searchRef.current,
+        status:  tabRef.current,
       });
+      setPosts(data);
+      setMeta(m ?? null);
+      setPage(m?.current_page ?? pageNum);
+    } catch {
+      setError('فشل تحميل البيانات، تحقق من الاتصال بالخادم');
+      setPosts([]);
+      setMeta(null);
+    } finally {
+      setLoading(false);
+      fetchingRef.current = false;
+    }
   }, []);
 
-  /* ── تحميل أول مرة ── */
   useEffect(() => {
-    currentPageRef.current = 0;
-    lastPageRef.current    = 1;
-    const t = setTimeout(() => fetchPage(1, true), 0);
+    if (firstLoadRef.current) {
+      firstLoadRef.current = false;
+      fetchingRef.current = false;
+      const t = setTimeout(() => loadPosts(1), 0);
+      return () => clearTimeout(t);
+    }
+    fetchingRef.current = false;
+    const delay = search.trim() ? 400 : 0;
+    const t = setTimeout(() => loadPosts(1), delay);
     return () => clearTimeout(t);
-  }, [fetchPage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, loadPosts]);
 
-  /* ── إعادة تحميل عند تغيير البحث ── */
-  useEffect(() => {
-    currentPageRef.current = 0;
-    lastPageRef.current    = 1;
-    fetchingRef.current    = false;
-    const t = setTimeout(() => fetchPage(1, true), 400);
-    return () => clearTimeout(t);
-  }, [search, fetchPage]);
-
-  /* ── تغيير التاب ── */
   const handleTabChange = useCallback((tab) => {
     setActiveTab(tab);
-    tabRef.current         = tab;
-    currentPageRef.current = 0;
-    lastPageRef.current    = 1;
-    fetchingRef.current    = false;
-    setTimeout(() => fetchPage(1, true), 0);
-  }, [fetchPage]);
+    tabRef.current = tab;
+    fetchingRef.current = false;
+    setTimeout(() => loadPosts(1), 0);
+  }, [loadPosts]);
 
-  /* ── IntersectionObserver ── */
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-    const root = scrollRootRef.current ?? null;
+  const handlePageChange = useCallback((nextPage) => {
+    const last = meta?.last_page ?? 1;
+    if (nextPage < 1 || nextPage > last) return;
+    fetchingRef.current = false;
+    loadPosts(nextPage);
+  }, [loadPosts, meta]);
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (
-          entry.isIntersecting &&
-          !fetchingRef.current &&
-          currentPageRef.current > 0 &&
-          currentPageRef.current < lastPageRef.current
-        ) {
-          fetchPage(currentPageRef.current + 1, false);
-        }
-      },
-      { root, threshold: 0, rootMargin: '200px' }
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [fetchPage]);
-
-  /* ── إعادة المحاولة ── */
   const handleRetry = useCallback(() => {
-    currentPageRef.current = 0;
-    lastPageRef.current    = 1;
-    fetchingRef.current    = false;
-    fetchPage(1, true);
-  }, [fetchPage]);
+    fetchingRef.current = false;
+    loadPosts(page || 1);
+  }, [loadPosts, page]);
 
-  /* ── قبول ── */
   const handleApprove = useCallback(async (id) => {
     setActionLoading(`approve_${id}`);
     setError('');
@@ -159,7 +120,6 @@ export const usePosts = () => {
     }
   }, []);
 
-  /* ── رفض ── */
   const handleRejectConfirm = useCallback(async (id, reason) => {
     setActionLoading(`reject_${id}`);
     setError('');
@@ -174,22 +134,27 @@ export const usePosts = () => {
     }
   }, []);
 
-  /* ── حذف ── */
   const handleDelete = useCallback(async (id) => {
     setActionLoading(`delete_${id}`);
     setError('');
     try {
       await deletePost(id);
-      setPosts(prev => prev.filter(p => p.id !== id));
+      const remaining = posts.filter(p => p.id !== id);
       setConfirmDelete(null);
+      if (remaining.length === 0 && page > 1) {
+        fetchingRef.current = false;
+        await loadPosts(page - 1);
+      } else {
+        fetchingRef.current = false;
+        await loadPosts(page);
+      }
     } catch {
       setError('فشل حذف المنشور');
     } finally {
       setActionLoading(null);
     }
-  }, []);
+  }, [loadPosts, page, posts]);
 
-  /* ── مساعدات ── */
   const formatDate = useCallback((str) => {
     if (!str) return '—';
     return new Date(str).toLocaleDateString('ar-EG', {
@@ -198,13 +163,12 @@ export const usePosts = () => {
   }, []);
 
   return {
-    posts, hasMore, loading, loadingMore, error,
-    search, activeTab, actionLoading,
+    posts, meta, loading, error,
+    search, activeTab, page, actionLoading,
     rejectTarget, confirmDelete,
     setSearch, setRejectTarget, setConfirmDelete,
-    handleTabChange, handleRetry,
+    handleTabChange, handlePageChange, handleRetry,
     handleApprove, handleRejectConfirm, handleDelete,
-    sentinelRef, scrollRootRef,
     formatDate,
   };
 };

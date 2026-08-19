@@ -1,12 +1,10 @@
 // src/views/Users/Users.jsx
-import { Search, Trash2, Ban, CheckCircle, Loader2, Users as UsersIcon } from 'lucide-react';
+import { Search, Trash2, Ban, CheckCircle, Loader2, Users as UsersIcon, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useUsers } from '../../controllers/useUsers';
+import BanUserModal from '../../components/BanUserModal';
 import './Users.css';
 
-/* ══════════════════════════════════════════
-   صف الجدول
-══════════════════════════════════════════ */
-const UserRow = ({ user, role, actionLoading, onBan, onUnban, onDelete, getInitials, formatDate }) => {
+const UserRow = ({ user, actionLoading, onBan, onUnban, onDelete, getInitials, formatDate }) => {
   const isBanned  = user.status?.value === 'banned';
   const isWorking = actionLoading !== null;
 
@@ -35,15 +33,13 @@ const UserRow = ({ user, role, actionLoading, onBan, onUnban, onDelete, getIniti
       </td>
       <td className="col-actions">
         <div className="action-btns">
-          {role === 'admin' && (
-            <button className="action-btn action-btn--delete" title="حذف المستخدم"
-              onClick={() => onDelete(user.id)} disabled={isWorking}>
-              {actionLoading === `${user.id}_delete`
-                ? <Loader2 size={14} className="spin" /> : <Trash2 size={14} />}
-            </button>
-          )}
+          <button className="action-btn action-btn--delete" title="حذف المستخدم"
+            onClick={() => onDelete(user.id)} disabled={isWorking}>
+            {actionLoading === `${user.id}_delete`
+              ? <Loader2 size={14} className="spin" /> : <Trash2 size={14} />}
+          </button>
           <button className="action-btn action-btn--block" title="حظر"
-            onClick={() => onBan(user.id)} disabled={isBanned || isWorking}>
+            onClick={() => onBan(user)} disabled={isBanned || isWorking}>
             {actionLoading === `${user.id}_ban`
               ? <Loader2 size={14} className="spin" /> : <Ban size={14} />}
           </button>
@@ -58,10 +54,7 @@ const UserRow = ({ user, role, actionLoading, onBan, onUnban, onDelete, getIniti
   );
 };
 
-/* ══════════════════════════════════════════
-   بطاقة الموبايل
-══════════════════════════════════════════ */
-const UserCard = ({ user, role, actionLoading, onBan, onUnban, onDelete, getInitials, formatDate }) => {
+const UserCard = ({ user, actionLoading, onBan, onUnban, onDelete, getInitials, formatDate }) => {
   const isBanned  = user.status?.value === 'banned';
   const isWorking = actionLoading !== null;
 
@@ -86,15 +79,13 @@ const UserCard = ({ user, role, actionLoading, onBan, onUnban, onDelete, getInit
       <div className="user-card-bottom">
         <span className="user-date">{formatDate(user.created_at)}</span>
         <div className="action-btns">
-          {role === 'admin' && (
-            <button className="action-btn action-btn--delete" title="حذف"
-              onClick={() => onDelete(user.id)} disabled={isWorking}>
-              {actionLoading === `${user.id}_delete`
-                ? <Loader2 size={14} className="spin" /> : <Trash2 size={14} />}
-            </button>
-          )}
+          <button className="action-btn action-btn--delete" title="حذف"
+            onClick={() => onDelete(user.id)} disabled={isWorking}>
+            {actionLoading === `${user.id}_delete`
+              ? <Loader2 size={14} className="spin" /> : <Trash2 size={14} />}
+          </button>
           <button className="action-btn action-btn--block" title="حظر"
-            onClick={() => onBan(user.id)} disabled={isBanned || isWorking}>
+            onClick={() => onBan(user)} disabled={isBanned || isWorking}>
             {actionLoading === `${user.id}_ban`
               ? <Loader2 size={14} className="spin" /> : <Ban size={14} />}
           </button>
@@ -109,24 +100,23 @@ const UserCard = ({ user, role, actionLoading, onBan, onUnban, onDelete, getInit
   );
 };
 
-/* ══════════════════════════════════════════
-   الصفحة الرئيسية
-══════════════════════════════════════════ */
 const Users = () => {
-  const role = localStorage.getItem('role');
-
   const {
-    users, total, hasMore, loading, loadingMore,
-    error, confirmDelete, actionLoading,
-    search, filterStatus, setSearch, setFilterStatus,
-    handleBan, handleUnban, handleDelete, setConfirmDelete,
-    sentinelRef, scrollRootRef, getInitials, formatDate,
+    users, meta, total, loading,
+    error, confirmDelete, confirmBan, actionLoading,
+    search, filterStatus, page,
+    setSearch, setFilterStatus,
+    handleBan, handleUnban, handleDelete,
+    setConfirmDelete, setConfirmBan,
+    handlePageChange,
+    getInitials, formatDate,
   } = useUsers();
 
-  return (
-    <div className="users-page" ref={scrollRootRef}>
+  const lastPage = meta?.last_page ?? 1;
 
-      {/* ── Header ── */}
+  return (
+    <div className="users-page">
+
       <div className="users-header">
         <div className="users-title-group">
           <h1 className="users-title">إدارة المستخدمين</h1>
@@ -148,10 +138,9 @@ const Users = () => {
         </div>
       </div>
 
-      {/* ── خطأ ── */}
       {error && <div className="users-error">{error}</div>}
 
-      {/* ══ جدول Desktop ══ */}
+      {/* Desktop table */}
       <div className="users-table-card">
         <table className="users-table">
           <thead>
@@ -174,23 +163,41 @@ const Users = () => {
                 <span>لا يوجد مستخدمون مطابقون</span>
               </td></tr>
             ) : users.map(user => (
-              <UserRow key={user.id} user={user} role={role}
+              <UserRow key={user.id} user={user}
                 actionLoading={actionLoading}
-                onBan={handleBan} onUnban={handleUnban}
+                onBan={setConfirmBan} onUnban={handleUnban}
                 onDelete={setConfirmDelete}
                 getInitials={getInitials} formatDate={formatDate} />
             ))}
           </tbody>
         </table>
 
-        {!loading && !hasMore && users.length > 0 && (
-          <div className="users-end">
-            تم عرض جميع المستخدمين ({total ?? users.length})
+        {!loading && users.length > 0 && lastPage > 1 && (
+          <div className="users-pagination">
+            <button
+              className="users-page-btn"
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page <= 1}
+            >
+              <ChevronRight size={16} />
+              <span className="users-page-btn-text">السابق</span>
+            </button>
+            <span className="users-page-info">
+              صفحة {page} من {lastPage}
+            </span>
+            <button
+              className="users-page-btn"
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page >= lastPage}
+            >
+              <span className="users-page-btn-text">التالي</span>
+              <ChevronLeft size={16} />
+            </button>
           </div>
         )}
       </div>
 
-      {/* ══ بطاقات Mobile ══ */}
+      {/* Mobile cards */}
       <div className="users-cards">
         {loading ? (
           <div className="users-loading-cards">
@@ -202,33 +209,38 @@ const Users = () => {
             <span>لا يوجد مستخدمون مطابقون</span>
           </div>
         ) : users.map(user => (
-          <UserCard key={user.id} user={user} role={role}
+          <UserCard key={user.id} user={user}
             actionLoading={actionLoading}
-            onBan={handleBan} onUnban={handleUnban}
+            onBan={setConfirmBan} onUnban={handleUnban}
             onDelete={setConfirmDelete}
             getInitials={getInitials} formatDate={formatDate} />
         ))}
 
-        {!loading && !hasMore && users.length > 0 && (
-          <div className="users-end">
-            تم عرض جميع المستخدمين ({total ?? users.length})
+        {!loading && users.length > 0 && lastPage > 1 && (
+          <div className="users-pagination">
+            <button
+              className="users-page-btn"
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page <= 1}
+            >
+              <ChevronRight size={16} />
+              <span className="users-page-btn-text">السابق</span>
+            </button>
+            <span className="users-page-info">
+              صفحة {page} من {lastPage}
+            </span>
+            <button
+              className="users-page-btn"
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page >= lastPage}
+            >
+              <span className="users-page-btn-text">التالي</span>
+              <ChevronLeft size={16} />
+            </button>
           </div>
         )}
       </div>
 
-      {/*
-        ══ Sentinel ══
-        دائماً موجود في DOM — لا يُخفى أبداً
-        الـ observer يراه دائماً ويقرر هو إذا يحمّل أم لا
-        يظهر مرئياً فقط عند loadingMore
-      */}
-      <div ref={sentinelRef} className="users-sentinel" aria-hidden="true">
-        {loadingMore && (
-          <><Loader2 size={18} className="spin" /><span>جاري تحميل المزيد...</span></>
-        )}
-      </div>
-
-      {/* ══ نافذة تأكيد الحذف ══ */}
       {confirmDelete && (
         <div className="confirm-overlay" onClick={() => setConfirmDelete(null)}>
           <div className="confirm-dialog" onClick={e => e.stopPropagation()}>
@@ -247,6 +259,15 @@ const Users = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {confirmBan && (
+        <BanUserModal
+          user={confirmBan}
+          onConfirm={handleBan}
+          onClose={() => setConfirmBan(null)}
+          loading={actionLoading === `${confirmBan.id}_ban`}
+        />
       )}
 
     </div>

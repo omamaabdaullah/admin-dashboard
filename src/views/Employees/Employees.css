@@ -152,13 +152,14 @@
 .emp-card {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 22px;
+  gap: 16px;
+  padding: 20px;
   background: #FFFFFF;
   border: 1px solid #FFE9E6;
   border-radius: 20px;
   box-shadow: 0 6px 20px rgba(192,57,43,0.05);
   transition: box-shadow 0.2s, transform 0.15s;
+  direction: rtl;
 }
 
 .emp-card:hover {
@@ -166,21 +167,18 @@
   transform: translateY(-2px);
 }
 
-/* رأس البطاقة */
-.emp-card-header { width: 100%; }
-
-.emp-card-identity {
+.emp-card-main {
   display: flex;
-  flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   gap: 14px;
-  justify-content: flex-end;
+  width: 100%;
 }
 
 .emp-avatar {
-  width: 52px;
-  height: 52px;
+  width: 56px;
+  height: 56px;
   border-radius: 9999px;
+  border: 2px solid #F7DDD9;
   background: #FCE2DE;
   display: flex;
   align-items: center;
@@ -189,59 +187,72 @@
   font-weight: 700;
   color: #9E2016;
   flex-shrink: 0;
+  overflow: hidden;
 }
 
-.emp-card-info {
+.emp-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.emp-card-content {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.emp-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
 }
 
 .emp-card-name {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   color: #261816;
-  text-align: right;
+  line-height: 1.3;
 }
 
 .emp-role-badge {
   display: inline-flex;
   align-items: center;
-  padding: 3px 14px;
-  background: #ECDCDA;
+  padding: 3px 12px;
+  background: #FFF0EE;
   border-radius: 9999px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  color: #4F4443;
+  color: #9E2016;
 }
 
-.emp-role-badge--lg {
-  padding: 5px 18px;
-  font-size: 14px;
-}
-
-/* تفاصيل البطاقة */
-.emp-card-details {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.emp-card-email {
+  margin: 0;
   width: 100%;
-}
-
-.emp-detail-row {
-  display: flex;
-  justify-content: flex-end;
-  width: 100%;
-}
-
-.emp-detail-label {
   font-size: 13px;
   font-weight: 500;
   color: #675C5A;
   direction: ltr;
   text-align: right;
   word-break: break-all;
+}
+
+.emp-card-date {
+  margin: 0;
+  width: 100%;
+  font-size: 12px;
+  color: #9E8C8A;
+  text-align: right;
+}
+
+.emp-role-badge--lg {
+  padding: 5px 18px;
+  font-size: 14px;
 }
 
 .emp-permissions-row {
@@ -270,10 +281,9 @@
 /* فوتر البطاقة */
 .emp-card-footer {
   display: flex;
-  flex-direction: row;
-  gap: 12px;
+  justify-content: flex-start;
   width: 100%;
-  padding-top: 16px;
+  padding-top: 12px;
   border-top: 1px solid #F7DDD9;
 }
 
@@ -282,20 +292,18 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 14px;
+  padding: 8px 18px;
   border: none;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  flex: 1;
   transition: opacity 0.15s, transform 0.1s;
   font-family: inherit;
 }
 
 .emp-btn:hover { opacity: 0.85; transform: translateY(-1px); }
 
-.emp-btn--view   { background: #ECDCDA; color: #4F4443; }
 .emp-btn--delete { background: #FFDAD6; color: #BA1A1A; }
 
 /* ══════════════════════════════

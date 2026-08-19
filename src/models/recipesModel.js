@@ -12,9 +12,11 @@ const firstImageUrl = (media = []) => {
   return images[0]?.url ?? null;
 };
 
-const firstIsVideo = (media = []) => {
-  if (!media.length) return false;
-  return enumValue(media[0]?.type) === 'video';
+const firstVideo = (media = []) => {
+  const videos = media
+    .filter((m) => enumValue(m.type) === 'video')
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  return videos[0] ?? null;
 };
 
 const formatDateAr = (iso) => {
@@ -34,8 +36,10 @@ export const normalizeRecipe = (recipe) => {
   const categoryName = recipe.category?.name ?? '—';
   const author = recipe.user?.name ?? '—';
   const image      = firstImageUrl(recipe.media);
-  const isVideo    = firstIsVideo(recipe.media);
-  const videoThumb = isVideo ? (recipe.media[0]?.url ?? null) : null;
+  const video      = firstVideo(recipe.media);
+  const isVideo    = Boolean(video) && !image;
+  const videoThumb = isVideo ? (video?.url ?? null) : null;
+  const videoPoster = isVideo ? (video?.thumbnail ?? null) : null;
 
   return {
     ...recipe,
@@ -50,6 +54,7 @@ export const normalizeRecipe = (recipe) => {
     image,
     isVideo,
     videoThumb,
+    videoPoster,
     addedDate: formatDateAr(recipe.created_at),
     ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
     steps: Array.isArray(recipe.steps) ? recipe.steps : [],
@@ -113,6 +118,11 @@ export const deleteRecipe = async (id) => {
   return res.data;
 };
 
+export const fetchRecipe = async (id) => {
+  const res = await axiosInstance.get(`/recipes/${id}`);
+  return normalizeRecipe(res.data.data ?? res.data);
+};
+
 /**
  * POST /recipes  (multipart/form-data)
  *
@@ -166,4 +176,19 @@ export const createRecipe = async (data) => {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
   return res.data;
+};
+
+// ── GET /recipes/{id}/comments ─────────────────────────────────────────────
+export const fetchRecipeComments = async (recipeId, { page = 1, perPage = 20 } = {}) => {
+  const params = new URLSearchParams();
+  params.append('page', page);
+  params.append('per_page', perPage);
+
+  const res = await axiosInstance.get(`/recipes/${recipeId}/comments?${params.toString()}`);
+  const payload = res.data;
+  return {
+    data: payload.data ?? [],
+    total: payload.meta?.total ?? 0,
+    meta: payload.meta ?? null,
+  };
 };

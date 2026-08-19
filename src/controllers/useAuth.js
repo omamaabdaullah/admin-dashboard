@@ -9,6 +9,7 @@ import {
   registerEmployee,
   showProfile,
   updateProfile,
+  changePassword,
 } from '../models/authModel';
 import { startTokenRefresh, stopTokenRefresh } from '../utils/tokenRefresher';
 
@@ -22,6 +23,9 @@ export const useAuth = () => {
     setError(null);
     try {
       const data = await loginAdmin(email, password);
+      if (data.role !== 'admin' && data.role !== 'employee') {
+        throw new Error('هذا الحساب غير مصرح له بدخول لوحة التحكم');
+      }
       localStorage.setItem('token', data.access_token);
       localStorage.setItem('user',  JSON.stringify(data.user));
       localStorage.setItem('role',  data.role ?? 'employee');
@@ -99,6 +103,16 @@ export const useAuth = () => {
     }
   };
 
+  const handleChangePassword = async (currentPassword, newPassword, confirmation) => {
+    setError(null);
+    try {
+      return await changePassword(currentPassword, newPassword, confirmation);
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
   return {
     loading,
     error,
@@ -107,5 +121,6 @@ export const useAuth = () => {
     handleRegisterEmployee,
     handleShowProfile,
     handleUpdateProfile,
+    handleChangePassword,
   };
 };

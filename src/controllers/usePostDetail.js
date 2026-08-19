@@ -37,13 +37,9 @@ export const usePostDetail = (id, initialPost = null) => {
   const [commentsLoad,  setCommentsLoad]  = useState(true);
   const [deletingCmt,   setDeletingCmt]   = useState(null);
 
-  // نحفظ الـ id في ref حتى نستخدمه في الـ callbacks بدون إضافته كـ dependency
   const postIdRef = useRef(id);
   useEffect(() => { postIdRef.current = id; }, [id]);
 
-  /* ── جلب تفاصيل المنشور ──
-     نستخدم setTimeout لكي لا يكون setPageLoading مباشرة في body الـ effect
-  ── */
   useEffect(() => {
     let cancelled = false;
 
@@ -52,7 +48,7 @@ export const usePostDetail = (id, initialPost = null) => {
       setPageError('');
 
       fetchPost(id)
-        .then(data => {
+        .then((data) => {
           if (!cancelled) {
             setPost(data);
             setPageLoading(false);
@@ -72,8 +68,9 @@ export const usePostDetail = (id, initialPost = null) => {
     };
   }, [id]);
 
-  /* ── جلب التعليقات ── */
   useEffect(() => {
+    if (!id) return;
+
     let cancelled = false;
 
     fetchComments(id)
@@ -91,38 +88,33 @@ export const usePostDetail = (id, initialPost = null) => {
     return () => { cancelled = true; };
   }, [id]);
 
-  /* ── قبول ──
-     نقرأ الـ id من الـ ref بدل post.id لتجنب مشكلة الـ memoization
-  ── */
   const handleApprove = useCallback(async () => {
     setActionLoading('approve');
     setActionError('');
     try {
       const updated = await approvePost(postIdRef.current);
-      setPost(prev => ({ ...prev, ...updated }));
+      setPost((prev) => ({ ...prev, ...updated }));
     } catch {
       setActionError('فشل نشر المنشور، حاول مجدداً');
     } finally {
       setActionLoading(null);
     }
-  }, []); // لا dependencies — يقرأ الـ ref مباشرة
+  }, []);
 
-  /* ── رفض ── */
   const handleReject = useCallback(async (reason) => {
     setActionLoading('reject');
     setActionError('');
     try {
       const updated = await rejectPost(postIdRef.current, reason);
-      setPost(prev => ({ ...prev, ...updated }));
+      setPost((prev) => ({ ...prev, ...updated }));
       setShowReject(false);
     } catch {
       setActionError('فشل رفض المنشور، حاول مجدداً');
     } finally {
       setActionLoading(null);
     }
-  }, []); // لا dependencies — يقرأ الـ ref مباشرة
+  }, []);
 
-  /* ── حذف ── */
   const handleDelete = useCallback(async () => {
     setActionLoading('delete');
     setActionError('');
@@ -134,23 +126,29 @@ export const usePostDetail = (id, initialPost = null) => {
       setActionLoading(null);
       setShowDelete(false);
     }
-  }, [navigate]); // navigate ثابتة من react-router — آمن
+  }, [navigate]);
 
-  /* ── حذف تعليق ── */
   const handleDeleteComment = useCallback(async (commentId) => {
     setDeletingCmt(commentId);
     try {
       await deleteComment(commentId);
-      setComments(prev => prev.filter(c => c.id !== commentId));
-      setCommentsTotal(prev => prev - 1);
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+      setCommentsTotal((prev) => Math.max(0, prev - 1));
     } catch {
-      // نتجاهل بهدوء
+      // تجاهل
     } finally {
       setDeletingCmt(null);
     }
   }, []);
 
-  /* ── مساعدات ── */
+  const removeCommentsByUserId = useCallback((userId) => {
+    setComments((prev) => {
+      const removed = prev.filter((c) => c.user?.id === userId).length;
+      setCommentsTotal((t) => Math.max(0, t - removed));
+      return prev.filter((c) => c.user?.id !== userId);
+    });
+  }, []);
+
   const formatDate = useCallback((str) => {
     if (!str) return '—';
     return new Date(str).toLocaleDateString('ar-EG', {
@@ -169,6 +167,7 @@ export const usePostDetail = (id, initialPost = null) => {
     comments, commentsTotal, commentsLoad,
     deletingCmt,
     handleApprove, handleReject, handleDelete, handleDeleteComment,
+    removeCommentsByUserId,
     formatDate, statusCfg,
     navigate,
   };

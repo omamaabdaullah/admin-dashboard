@@ -38,14 +38,18 @@ function App() {
           <Route path="dashboard"      element={<Dashboard />} />
           <Route path="recipes"        element={<Recipes />} />
           <Route path="recipes/add"    element={<AddRecipe />} />
-          <Route path="recipes/detail" element={<RecipeDetail />} />
+          <Route path="recipes/:id" element={<RecipeDetail />} />
           <Route path="profile"        element={<Profile />} />
           <Route path="categories"     element={<Categories />} />
           <Route path="users"          element={<Users />} />
           <Route path="posts"          element={<Posts />} />
           <Route path="posts/:id"       element={<PostDetail />} />
           <Route path="analytics" element={<Analytics />} />
-          <Route path="audit-log" element={<AuditLog />} />
+          <Route path="audit-log" element={
+  <ProtectedRoute requiredRole="admin">
+    <AuditLog />
+  </ProtectedRoute>
+} />
           <Route path="/notifications" element={<Notifications />} />
 
           {/* Admin فقط */}
