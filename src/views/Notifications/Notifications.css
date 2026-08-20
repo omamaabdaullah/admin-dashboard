@@ -475,23 +475,7 @@
   text-align: right;
 }
 
-.notif-download-btn {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 4px;
-  background: none;
-  border: none;
-  font-size: 13px;
-  font-weight: 600;
-  color: #7C0202;
-  cursor: pointer;
-  padding: 0;
-  font-family: inherit;
-  transition: opacity 0.15s;
-}
-
-.notif-download-btn:hover { opacity: 0.75; }
+/* تم إزالة زر تحميل سجل الإشعارات */
 
 /* ── الجدول ── */
 .notif-table-wrapper {
@@ -844,11 +828,6 @@
     flex-direction: column-reverse;
     align-items: stretch;
     gap: 12px;
-  }
-
-  .notif-download-btn {
-    width: 100%;
-    justify-content: center;
   }
 
   .notif-table-wrapper {

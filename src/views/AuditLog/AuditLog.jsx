@@ -1,11 +1,9 @@
 // src/views/AuditLog/AuditLog.jsx
-import { useState } from 'react';
 import {
   Search, ChevronLeft, ChevronRight,
-  BarChart2, Calendar, X, ShieldX, Loader2, Download,
+  BarChart2, Calendar, X, ShieldX, Loader2,
 } from 'lucide-react';
 import { useAuditLog } from '../../controllers/useAuditLog';
-import { exportAuditLogs } from '../../models/auditLogModel';
 import './AuditLog.css';
 
 const fmt = (n) => Number(n ?? 0).toLocaleString('en-US');
@@ -43,38 +41,8 @@ const AuditLog = () => {
     page, setPage, goTo,
     handleReset,
   } = useAuditLog();
-  const [exportLoading, setExportLoading] = useState(false);
 
   const lastPage = meta.lastPage || 1;
-
-  const handleExport = async () => {
-    setExportLoading(true);
-    try {
-      const allRows = await exportAuditLogs({
-        search,
-        action,
-        userId,
-        dateFrom,
-        dateTo,
-      });
-
-      const rows = ['نوع العملية,التفاصيل,المشرف,التاريخ والوقت'];
-      allRows.forEach((row) => {
-        rows.push(`"${row.typeLabel}","${row.details}","${row.admin}","${row.date}"`);
-      });
-
-      const csvContent = `\uFEFF${rows.join('\n')}`;
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'audit-log.csv';
-      a.click();
-      URL.revokeObjectURL(url);
-    } finally {
-      setExportLoading(false);
-    }
-  };
 
   const renderPageBtns = () => {
     const btns = [];
@@ -97,15 +65,6 @@ const AuditLog = () => {
         <div className="audit-log-title-group">
           <h1 className="audit-log-title">سجل التدقيق</h1>
         </div>
-        <button
-          type="button"
-          className="audit-export-btn"
-          onClick={handleExport}
-          disabled={exportLoading}
-        >
-          {exportLoading ? <Loader2 size={16} className="audit-spin" /> : <Download size={16} />}
-          {exportLoading ? 'جاري التصدير...' : 'تحميل السجل'}
-        </button>
       </div>
 
       <div className="audit-stats-row">

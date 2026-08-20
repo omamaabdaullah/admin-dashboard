@@ -1,6 +1,6 @@
 // src/views/Notifications/Notifications.jsx
 import { useState, useEffect, useCallback } from 'react';
-import { Bell, Trash2, Download, Loader2, ChevronRight, ChevronLeft, Search, X } from 'lucide-react';
+import { Bell, Trash2, Loader2, ChevronRight, ChevronLeft, Search, X } from 'lucide-react';
 import {
   fetchSentNotifications,
   sendNotification,
@@ -307,24 +307,6 @@ const Notifications = () => {
     }
   };
 
-  /* ── تحميل CSV ── */
-  const handleDownload = () => {
-    if (notifications.length === 0) return;
-    const rows = ['العنوان,المستلمون,التاريخ,الحالة'];
-    notifications.forEach((n) => {
-      const st = STATUS_CONFIG[n.status]?.label ?? n.status;
-      rows.push(`"${n.title}","${n.recipients}","${n.date}","${st}"`);
-    });
-    const csvContent = `\uFEFF${rows.join('\n')}`;
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = 'notifications.csv';
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   const totalPages = pageMeta?.last_page ?? 1;
 
   return (
@@ -533,14 +515,6 @@ const Notifications = () => {
 
           {/* رأس السجل */}
           <div className="notif-log-header">
-            <button
-              className="notif-download-btn"
-              onClick={handleDownload}
-              disabled={notifications.length === 0}
-            >
-              <Download size={12} />
-              تحميل السجل
-            </button>
             <div className="notif-log-title-row">
               <Bell size={18} className="notif-card-title-icon" />
               <h2 className="notif-log-title">سجل الإشعارات المُرسلة</h2>

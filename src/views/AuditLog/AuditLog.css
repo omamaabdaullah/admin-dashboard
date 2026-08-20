@@ -40,25 +40,7 @@
   line-height: 22px;
 }
 
-.audit-export-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border: 1px solid #7C0202;
-  border-radius: 10px;
-  padding: 12px 20px;
-  font-family: 'Cairo', sans-serif;
-  font-size: 15px;
-  font-weight: 400;
-  color: #7C0202;
-  background: #FFFFFF;
-  cursor: pointer;
-  transition: background 0.15s;
-  white-space: nowrap;
-}
-
-.audit-export-btn:hover { background: #FFF0EE; }
-.audit-export-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+/* تم إزالة زر تحميل/تصدير سجل العمليات */
 
 /* ======================== Stats Row ======================== */
 .audit-stats-row {
@@ -474,10 +456,6 @@
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
-  }
-  .audit-export-btn {
-    width: 100%;
-    justify-content: center;
   }
 }
 

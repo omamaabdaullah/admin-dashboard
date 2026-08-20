@@ -5,7 +5,7 @@
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL;
-const REFRESH_INTERVAL = 5 * 60 * 1000;
+const REFRESH_INTERVAL = 50 * 60 * 1000;
 
 let refreshTimer = null;
 
